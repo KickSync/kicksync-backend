@@ -10,7 +10,7 @@ import be.kicksync_backend.feature.user.dto.UserResponseDto;
 import be.kicksync_backend.feature.user.dto.UserSignupRequestDto;
 import be.kicksync_backend.feature.user.entity.User;
 import be.kicksync_backend.feature.user.repository.UserRepository;
-import be.kicksync_backend.feature.user.repository.RefreshTokenRepository;
+import be.kicksync_backend.feature.token.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

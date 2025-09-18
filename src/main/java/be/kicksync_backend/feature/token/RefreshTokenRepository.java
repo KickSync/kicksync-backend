@@ -1,6 +1,5 @@
-package be.kicksync_backend.feature.user.repository;
+package be.kicksync_backend.feature.token;
 
-import be.kicksync_backend.feature.token.RefreshToken;
 import be.kicksync_backend.feature.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 

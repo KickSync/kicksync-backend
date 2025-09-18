@@ -17,11 +17,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
-import be.kicksync_backend.feature.user.repository.RefreshTokenRepository;
+import be.kicksync_backend.feature.token.RefreshTokenRepository;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import be.kicksync_backend.feature.token.RefreshTokenService;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;

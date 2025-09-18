@@ -5,7 +5,6 @@ import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.common.security.UserDetailsImpl;
 import be.kicksync_backend.common.util.JwtUtil;
 import be.kicksync_backend.feature.user.entity.User;
-import be.kicksync_backend.feature.user.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,10 +12,13 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+
 import be.kicksync_backend.common.dto.JwtResponseDto;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
@@ -24,10 +26,6 @@ public class RefreshTokenService {
 
     @Value("${jwt.refresh.expiration}")
     private Long refreshTokenDurationMs;
-
-    public Optional<RefreshToken> findByToken(String token) {
-        return refreshTokenRepository.findByToken(token);
-    }
 
     public RefreshToken createRefreshToken(User user) {
         RefreshToken refreshToken = RefreshToken.builder()
@@ -39,7 +37,9 @@ public class RefreshTokenService {
     }
 
     public Optional<JwtResponseDto> refreshTokens(String token) {
-        return refreshTokenRepository.findByToken(token)
+        String normalized = token == null ? "" : token.trim();
+        if (normalized.isEmpty()) return Optional.empty();
+        return refreshTokenRepository.findByToken(normalized)
                 .map(refreshToken -> {
                     verifyExpiration(refreshToken);
                     User user = refreshToken.getUser();
@@ -49,7 +49,6 @@ public class RefreshTokenService {
                     return new JwtResponseDto(newAccessToken, newRefreshToken);
                 });
     }
-
 
     private void verifyExpiration(RefreshToken token) {
         if (token.getExpiryDate().isBefore(Instant.now())) {
