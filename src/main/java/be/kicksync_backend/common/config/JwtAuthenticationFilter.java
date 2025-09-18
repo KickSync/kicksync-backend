@@ -30,6 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(
@@ -78,7 +79,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         body.put("message", ex.getMessage());
         body.put("path", ((HttpServletRequest) response).getServletPath());
 
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getOutputStream(), body);
+        objectMapper.writeValue(response.getOutputStream(), body);
     }
 } 
