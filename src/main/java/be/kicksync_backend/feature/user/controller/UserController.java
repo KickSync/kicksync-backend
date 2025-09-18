@@ -11,6 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import be.kicksync_backend.common.security.UserDetailsImpl;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @RestController
 @RequestMapping("/api/users")
@@ -50,6 +54,38 @@ public class UserController {
                 .msg(ResponseText.USER_LOGIN_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
                 .data(jwtResponseDto)
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 사용자 로그아웃 API
+     *
+     * @param userDetails 현재 인증된 사용자 정보
+     * @return 성공 메시지
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        userService.logout(userDetails);
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .msg(ResponseText.LOGOUT_SUCCESS.getMsg())
+                .statuscode(String.valueOf(HttpStatus.OK.value()))
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 회원 탈퇴 API
+     *
+     * @param userDetails 현재 인증된 사용자 정보
+     * @return 성공 메시지
+     */
+    @DeleteMapping("/account")
+    public ResponseEntity<ApiResponse<Void>> deleteAccount(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        userService.deleteAccount(userDetails);
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .msg(ResponseText.DELETE_ACCOUNT_SUCCESS.getMsg())
+                .statuscode(String.valueOf(HttpStatus.OK.value()))
                 .build();
         return ResponseEntity.ok(response);
     }

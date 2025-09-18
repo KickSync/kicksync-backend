@@ -10,6 +10,7 @@ import be.kicksync_backend.feature.user.dto.UserResponseDto;
 import be.kicksync_backend.feature.user.dto.UserSignupRequestDto;
 import be.kicksync_backend.feature.user.entity.User;
 import be.kicksync_backend.feature.user.repository.UserRepository;
+import be.kicksync_backend.feature.user.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,13 +22,14 @@ import be.kicksync_backend.feature.user.dto.UserLoginRequestDto;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    @Transactional
     public UserResponseDto signup(UserSignupRequestDto requestDto) {
 
         if (userRepository.findByUsername(requestDto.getUsername()).isPresent()) {
@@ -41,7 +43,6 @@ public class UserService implements UserDetailsService {
         return new UserResponseDto(savedUser);
     }
 
-    @Transactional
     public JwtResponseDto login(UserLoginRequestDto requestDto) {
         User user = userRepository.findByUsername(requestDto.getUsername())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -50,11 +51,24 @@ public class UserService implements UserDetailsService {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
 
-        UserDetails userDetails = loadUserByUsername(user.getUsername());
+        UserDetailsImpl userDetails = UserDetailsImpl.build(user);
         String accessToken = jwtUtil.generateAccessToken(userDetails);
         String refreshToken = refreshTokenService.createRefreshToken(user).getToken();
 
         return new JwtResponseDto(accessToken, refreshToken);
+    }
+
+    public void logout(UserDetailsImpl userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        refreshTokenRepository.deleteByUser(user);
+    }
+
+    public void deleteAccount(UserDetailsImpl userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
+        userRepository.delete(user);
     }
 
     @Override

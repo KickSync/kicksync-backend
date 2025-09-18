@@ -10,7 +10,9 @@ public enum ResponseText {
     ADMIN_LOGIN_SUCCESS("관리자 로그인에 성공했습니다."),
     USER_SIGNUP_SUCCESS("회원가입에 성공하였습니다."),
     USER_LOGIN_SUCCESS("로그인에 성공하였습니다."),
-    TOKEN_REFRESH_SUCCESS("액세스 토큰이 성공적으로 갱신되었습니다.");
+    LOGOUT_SUCCESS("로그아웃에 성공하였습니다."),
+    DELETE_ACCOUNT_SUCCESS("회원탈퇴에 성공하였습니다."),
+    TOKEN_REFRESH_SUCCESS("토큰 재발급에 성공하였습니다.");
 
     private final String msg;
 
