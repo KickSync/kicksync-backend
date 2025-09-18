@@ -16,10 +16,24 @@ public enum ResponseText {
 
     private final String msg;
 
+    /**
+     * Creates an enum constant with the associated response message.
+     *
+     * @param msg the message string for this response (may contain `String.format` placeholders)
+     */
     ResponseText(String msg) {
         this.msg = msg;
     }
 
+    /**
+     * Formats this enum's message with the provided arguments.
+     *
+     * Returns the enum's stored message after applying String.format with the given arguments,
+     * allowing insertion of values into any format specifiers present in the message.
+     *
+     * @param args values referenced by the format specifiers in the message
+     * @return the formatted message string
+     */
     public String format(Object... args) {
         return String.format(this.msg, args);
     }

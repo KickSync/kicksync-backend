@@ -31,6 +31,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
 
+    /**
+     * Processes an incoming HTTP request to authenticate a JWT (if present) and populate the Spring Security context.
+     *
+     * <p>If the request's "Authorization" header contains a Bearer token, the method extracts the JWT, resolves the
+     * username, loads the corresponding UserDetails, and validates the token. When validation succeeds, an
+     * authenticated UsernamePasswordAuthenticationToken is placed into SecurityContextHolder so downstream handlers
+     * see the request as authenticated. If the Authorization header is missing or does not start with "Bearer ",
+     * the request is passed through without modifying the security context.</p>
+     *
+     * <p>JWT-related errors (expired, malformed, invalid signature, or illegal argument) are handled by returning a
+     * 401 Unauthorized JSON response instead of proceeding with the filter chain.</p>
+     */
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -68,6 +80,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
+    /**
+     * Writes a 401 Unauthorized JSON body to the given HttpServletResponse.
+     *
+     * The produced JSON contains keys: "status" (401), "error" ("Unauthorized"),
+     * "message" (the throwable's message), and "path" (obtained from the request's servlet path).
+     *
+     * @param response the HTTP response to write the JSON body to
+     * @param ex       the exception whose message will be included in the response body
+     * @throws IOException if writing to the response output stream fails
+     * @throws ClassCastException if the provided response cannot be cast to HttpServletRequest when attempting to obtain the servlet path
+     */
     private void setErrorResponse(HttpServletResponse response, Throwable ex) throws IOException {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

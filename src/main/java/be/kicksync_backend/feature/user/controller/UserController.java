@@ -24,10 +24,13 @@ public class UserController {
     private final UserService userService;
 
     /**
-     * 회원가입 API
+     * Create a new user account.
      *
-     * @param requestDto 사용자 회원가입 요청 데이터
-     * @return 생성된 사용자 정보
+     * Accepts a UserSignupRequestDto and returns a ResponseEntity containing an ApiResponse
+     * with the created UserResponseDto payload and HTTP status 201 (Created).
+     *
+     * @param requestDto the signup request data
+     * @return ResponseEntity wrapping ApiResponse<UserResponseDto> with the created user and HTTP 201
      */
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<UserResponseDto>> signup(@RequestBody UserSignupRequestDto requestDto) {
@@ -41,10 +44,10 @@ public class UserController {
     }
 
     /**
-     * 사용자 로그인 API
+     * Authenticates a user and returns a JWT wrapped in a standardized ApiResponse.
      *
-     * @param requestDto 사용자 로그인 요청 데이터
-     * @return JWT 토큰
+     * @param requestDto credentials and authentication data for the user login request
+     * @return a ResponseEntity containing an ApiResponse with a JwtResponseDto on successful authentication
      */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<JwtResponseDto>> login(@RequestBody UserLoginRequestDto requestDto) {
@@ -59,10 +62,12 @@ public class UserController {
     }
 
     /**
-     * 사용자 로그아웃 API
+     * Logs out the currently authenticated user.
      *
-     * @param userDetails 현재 인증된 사용자 정보
-     * @return 성공 메시지
+     * Calls the service to perform logout and returns a 200 OK ApiResponse containing a success message.
+     *
+     * @param userDetails the authenticated user's details (injected via {@code @AuthenticationPrincipal})
+     * @return ResponseEntity containing an ApiResponse with no data and HTTP 200 status
      */
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -75,10 +80,12 @@ public class UserController {
     }
 
     /**
-     * 회원 탈퇴 API
+     * Delete the authenticated user's account.
      *
-     * @param userDetails 현재 인증된 사용자 정보
-     * @return 성공 메시지
+     * Performs account removal for the currently authenticated principal and returns a standardized ApiResponse with no data.
+     *
+     * @param userDetails the authenticated user's principal (UserDetailsImpl)
+     * @return ResponseEntity containing an ApiResponse<Void> with a success message and HTTP 200 OK
      */
     @DeleteMapping("/account")
     public ResponseEntity<ApiResponse<Void>> deleteAccount(@AuthenticationPrincipal UserDetailsImpl userDetails) {

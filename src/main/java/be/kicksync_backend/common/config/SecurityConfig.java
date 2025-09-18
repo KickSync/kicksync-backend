@@ -20,11 +20,29 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
 
+    /**
+     * Exposes the application's AuthenticationManager by delegating to the provided AuthenticationConfiguration.
+     *
+     * @return the AuthenticationManager from the AuthenticationConfiguration
+     * @throws Exception if the AuthenticationManager cannot be obtained from the AuthenticationConfiguration
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    /**
+     * Configures and returns the application's SecurityFilterChain for HTTP security.
+     *
+     * <p>Disables CSRF, sets session management to stateless, permits unauthenticated access to
+     * the signup/login and token refresh endpoints, restricts `/api/admin/**` to users with the
+     * `ADMIN` role, requires authentication for all other requests, registers the configured
+     * AuthenticationProvider, and inserts the JWT authentication filter before the
+     * UsernamePasswordAuthenticationFilter.</p>
+     *
+     * @return the built SecurityFilterChain
+     * @throws Exception if an error occurs while configuring the HttpSecurity
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

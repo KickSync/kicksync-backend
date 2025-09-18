@@ -21,6 +21,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class TokenController {
     private final RefreshTokenService refreshTokenService;
 
+    /**
+     * Refreshes JWT access and refresh tokens using a provided refresh token.
+     *
+     * <p>Expects a JSON body with a refresh token; delegates validation and issuance to
+     * {@code refreshTokenService}. On success returns HTTP 200 with an {@code ApiResponse}
+     * whose {@code data} is the newly issued {@code JwtResponseDto}.</p>
+     *
+     * @param requestDto request body containing the refresh token
+     * @return ResponseEntity wrapping an ApiResponse with the new JwtResponseDto
+     * @throws CustomException if the provided refresh token is invalid
+     */
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<JwtResponseDto>> refreshToken(@RequestBody TokenRefreshRequestDto requestDto) {
         String requestRefreshToken = requestDto.getRefreshToken();
