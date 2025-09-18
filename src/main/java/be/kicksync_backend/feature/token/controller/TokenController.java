@@ -7,6 +7,7 @@ import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.feature.token.RefreshTokenService;
 import be.kicksync_backend.feature.token.dto.TokenRefreshRequestDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class TokenController {
     private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<JwtResponseDto>> refreshToken(@RequestBody TokenRefreshRequestDto requestDto) {
+    public ResponseEntity<ApiResponse<JwtResponseDto>> refreshToken(@Valid @RequestBody TokenRefreshRequestDto requestDto) {
         String requestRefreshToken = requestDto.getRefreshToken();
 
         JwtResponseDto newTokens = refreshTokenService.refreshTokens(requestRefreshToken)
