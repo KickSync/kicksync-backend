@@ -44,15 +44,14 @@ public class UserService implements UserDetailsService {
     }
 
     public JwtResponseDto login(UserLoginRequestDto requestDto) {
-        User user = userRepository.findByUsername(requestDto.getUsername())
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        User user = userRepository.findByUsername(requestDto.getUsername()).orElse(null);
+        if (user == null || !passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+            throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
         }
 
         UserDetailsImpl userDetails = UserDetailsImpl.build(user);
         String accessToken = jwtUtil.generateAccessToken(userDetails);
+        refreshTokenRepository.deleteByUser(user);
         String refreshToken = refreshTokenService.createRefreshToken(user).getToken();
 
         return new JwtResponseDto(accessToken, refreshToken);
