@@ -47,10 +47,10 @@ public class UserController {
         JwtResponseDto jwtResponseDto = userService.login(requestDto);
 
         ApiResponse<JwtResponseDto> response = ApiResponse.<JwtResponseDto>builder()
-                .msg(ResponseText.USER_LOGIN_SUCCESS.format(requestDto.getUsername()))
+                .msg(ResponseText.USER_LOGIN_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
                 .data(jwtResponseDto)
                 .build();
         return ResponseEntity.ok(response);
     }
-} 
+}
