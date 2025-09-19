@@ -2,9 +2,7 @@ package be.kicksync_backend.common.config;
 
 import be.kicksync_backend.common.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.security.SignatureException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -30,6 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(
@@ -45,40 +45,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        jwt = authHeader.substring(7);
         try {
-            jwt = authHeader.substring(7);
             username = jwtUtil.getUsernameFromToken(jwt);
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
+            setErrorResponse(request, response, e);
+            return;
+        }
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
                 if (jwtUtil.validateToken(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
+                            userDetails, null, userDetails.getAuthorities()
                     );
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
-                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
+            } catch (UsernameNotFoundException | JwtException | IllegalArgumentException e) {
+                setErrorResponse(request, response, e);
+                return;
             }
-            filterChain.doFilter(request, response);
-        } catch (ExpiredJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
-            setErrorResponse(response, e);
         }
+        filterChain.doFilter(request, response);
     }
 
-    private void setErrorResponse(HttpServletResponse response, Throwable ex) throws IOException {
+    private void setErrorResponse(HttpServletRequest request, HttpServletResponse response, Throwable ex) throws IOException {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setHeader(
+                "WWW-Authenticate",
+                "Bearer error=\"invalid_token\""
+        );
 
         final Map<String, Object> body = new HashMap<>();
         body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
         body.put("error", "Unauthorized");
         body.put("message", ex.getMessage());
-        body.put("path", ((HttpServletRequest) response).getServletPath());
+        body.put("path", request.getServletPath());
 
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getOutputStream(), body);
+        objectMapper.writeValue(response.getOutputStream(), body);
     }
 } 

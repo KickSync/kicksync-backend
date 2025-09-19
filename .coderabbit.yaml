@@ -3,7 +3,7 @@ language: "ko-KR"   # 한국어로 리뷰
 early_access: false
 
 reviews:
-  profile: "balanced"   # 정교한 리뷰
+  profile: "assertive"
   request_changes_workflow: true  # 필요 시 자동 승인/변경 요청 처리
   high_level_summary: true        # 요약 리뷰 제공
   review_status: true             # 리뷰 상태 PR에 표시

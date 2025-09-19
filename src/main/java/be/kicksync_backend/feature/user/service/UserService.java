@@ -10,7 +10,7 @@ import be.kicksync_backend.feature.user.dto.UserResponseDto;
 import be.kicksync_backend.feature.user.dto.UserSignupRequestDto;
 import be.kicksync_backend.feature.user.entity.User;
 import be.kicksync_backend.feature.user.repository.UserRepository;
-import be.kicksync_backend.feature.user.repository.RefreshTokenRepository;
+import be.kicksync_backend.feature.token.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -44,15 +44,14 @@ public class UserService implements UserDetailsService {
     }
 
     public JwtResponseDto login(UserLoginRequestDto requestDto) {
-        User user = userRepository.findByUsername(requestDto.getUsername())
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        User user = userRepository.findByUsername(requestDto.getUsername()).orElse(null);
+        if (user == null || !passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+            throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
         }
 
         UserDetailsImpl userDetails = UserDetailsImpl.build(user);
         String accessToken = jwtUtil.generateAccessToken(userDetails);
+        refreshTokenRepository.deleteByUser(user);
         String refreshToken = refreshTokenService.createRefreshToken(user).getToken();
 
         return new JwtResponseDto(accessToken, refreshToken);
