@@ -7,6 +7,7 @@ import be.kicksync_backend.feature.user.dto.UserLoginRequestDto;
 import be.kicksync_backend.feature.user.dto.UserResponseDto;
 import be.kicksync_backend.feature.user.dto.UserSignupRequestDto;
 import be.kicksync_backend.feature.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class UserController {
      * @return 생성된 사용자 정보
      */
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<UserResponseDto>> signup(@RequestBody UserSignupRequestDto requestDto) {
+    public ResponseEntity<ApiResponse<UserResponseDto>> signup(@Valid @RequestBody UserSignupRequestDto requestDto) {
         UserResponseDto userResponseDto = userService.signup(requestDto);
         ApiResponse<UserResponseDto> response = ApiResponse.<UserResponseDto>builder()
                 .msg(ResponseText.USER_SIGNUP_SUCCESS.getMsg())
@@ -47,7 +48,7 @@ public class UserController {
      * @return JWT 토큰
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<JwtResponseDto>> login(@RequestBody UserLoginRequestDto requestDto) {
+    public ResponseEntity<ApiResponse<JwtResponseDto>> login(@Valid @RequestBody UserLoginRequestDto requestDto) {
         JwtResponseDto jwtResponseDto = userService.login(requestDto);
 
         ApiResponse<JwtResponseDto> response = ApiResponse.<JwtResponseDto>builder()
