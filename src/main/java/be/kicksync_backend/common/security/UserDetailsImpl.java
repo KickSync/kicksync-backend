@@ -21,7 +21,9 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     public static UserDetailsImpl build(User user) {
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(user.getRole().name()));
+        String roleName = user.getRole() != null ? user.getRole().name() : "USER";
+        String authority = roleName.startsWith("ROLE_") ? roleName : "ROLE_" + roleName;
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(authority));
         return new UserDetailsImpl(
                 user.getUsername(),
                 user.getPassword(),
@@ -62,4 +64,4 @@ public class UserDetailsImpl implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-} 
+}
