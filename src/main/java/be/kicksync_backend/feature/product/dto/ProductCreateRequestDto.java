@@ -1,5 +1,6 @@
 package be.kicksync_backend.feature.product.dto;
 
+import be.kicksync_backend.feature.product.entity.Product;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,8 +15,8 @@ public class ProductCreateRequestDto {
     private LocalDate releaseDate;
     private BigDecimal retailPrice;
 
-    public ProductCreateRequestDto toEntity() {
-        return ProductCreateRequestDto.builder()
+    public Product toEntity() {
+        return Product.builder()
                 .name(this.name)
                 .model(this.model)
                 .releaseDate(this.releaseDate)
