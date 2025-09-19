@@ -10,10 +10,10 @@ import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table(name = "users")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,6 +23,9 @@ public class User extends BaseTimeEntity {
 
     @Column(nullable = false, length = 250)
     private String password;
+
+    @Column(unique = true)
+    private String nickname;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -42,4 +45,8 @@ public class User extends BaseTimeEntity {
         this.password = password;
         this.role = role;
     }
-} 
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+}
