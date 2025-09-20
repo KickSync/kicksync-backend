@@ -11,11 +11,9 @@ spring:
     username: sa
     password:
 
-  jwt:
-    secret:
-      key: ${JWT_SECRET_KEY}
-    access:
-      expiration: ${JWT_ACCESS_EXPIRATION}
-    refresh:
-      expiration: ${JWT_REFRESH_EXPIRATION}
-
+  secret:
+    key: ${JWT_SECRET_KEY}
+  access:
+    expiration: ${JWT_ACCESS_EXPIRATION:1800000}
+  refresh:
+    expiration: ${JWT_REFRESH_EXPIRATION:604800000}
