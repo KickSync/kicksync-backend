@@ -17,7 +17,14 @@ public enum ResponseText {
     // MyPage
     PROFILE_GET_SUCCESS("프로필 조회에 성공하였습니다."),
     PROFILE_UPDATE_SUCCESS("프로필 수정에 성공하였습니다."),
-    ORDER_HISTORY_GET_SUCCESS("주문 내역 조회에 성공하였습니다.");
+    ORDER_HISTORY_GET_SUCCESS("주문 내역 조회에 성공하였습니다."),
+
+    // Product
+    CREATE_PRODUCT_SUCCESS("상품 생성에 성공하였습니다."),
+    GET_PRODUCTS_SUCCESS("상품 전체 조회에 성공하였습니다."),
+    GET_PRODUCT_SUCCESS("상품 단건 조회에 성공하였습니다."),
+    UPDATE_PRODUCT_SUCCESS("상품 수정에 성공하였습니다."),
+    DELETE_PRODUCT_SUCCESS("상품 삭제에 성공하였습니다.");
 
     private final String msg;
 
