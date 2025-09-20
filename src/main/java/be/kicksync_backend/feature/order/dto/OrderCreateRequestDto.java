@@ -17,9 +17,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderCreateRequestDto {
-    @NotNull
+    @NotNull(message = "사용자 ID는 필수입니다")
     private Long userId;
-    @NotNull
+    @NotNull(message = "상품 ID는 필수입니다")
     private Long productId;
 
     public Order toEntity(User user, Product product, BigDecimal calculatedFinalPrice, LocalDateTime orderDate) {

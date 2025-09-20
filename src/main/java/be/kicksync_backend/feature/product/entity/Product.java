@@ -21,10 +21,10 @@ public class Product extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String model;
 
     @Column(nullable = false)
@@ -38,4 +38,11 @@ public class Product extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<Order> orders = new ArrayList<>();
+
+    public void update(String name, String model, LocalDate releaseDate, BigDecimal retailPrice) {
+        this.name = name;
+        this.model = model;
+        this.releaseDate = releaseDate;
+        this.retailPrice = retailPrice;
+    }
 }
