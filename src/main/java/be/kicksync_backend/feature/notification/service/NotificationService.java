@@ -20,8 +20,8 @@ public class NotificationService {
 
 
     @Transactional(readOnly = true)
-    public void sendDropResult(Long eventId, DropResultDto result) {
-        User user = userRepository.findById(result.getUserId())
+    public void sendDropResult(Long eventId, Long userId, DropResultDto result) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         simpMessagingTemplate.convertAndSendToUser(user.getUsername(), DEST_PREFIX + eventId, result);
     }

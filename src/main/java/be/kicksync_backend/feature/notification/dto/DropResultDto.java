@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DropResultDto {
-    private Long userId;
     private String status;
     private String message;
 } 
