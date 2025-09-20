@@ -1,0 +1,21 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop # 테스트 종료 후 데이터베이스 정리
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true # 테스트 시 SQL 쿼리 확인
+
+  datasource:
+    url: jdbc:h2:mem:testdb # 테스트용 인메모리 DB
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+jwt:
+  secret:
+    key: VEVTVF9KV1RfU0VDUkVUX0tFWV9URVNUX0pXVF9TRUNSRVRfS0VZX1RFU1RfSldUX1NFQ1JFVF9LRVk= # 테스트용 시크릿 키
+  access:
+    expiration: 1800000 # 30분
+  refresh:
+    expiration: 604800000 # 7일
+

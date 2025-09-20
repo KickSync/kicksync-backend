@@ -12,7 +12,12 @@ public enum ResponseText {
     USER_LOGIN_SUCCESS("로그인에 성공하였습니다."),
     LOGOUT_SUCCESS("로그아웃에 성공하였습니다."),
     DELETE_ACCOUNT_SUCCESS("회원탈퇴에 성공하였습니다."),
-    TOKEN_REFRESH_SUCCESS("토큰 재발급에 성공하였습니다.");
+    TOKEN_REFRESH_SUCCESS("토큰 재발급에 성공하였습니다."),
+
+    // MyPage
+    PROFILE_GET_SUCCESS("프로필 조회에 성공하였습니다."),
+    PROFILE_UPDATE_SUCCESS("프로필 수정에 성공하였습니다."),
+    ORDER_HISTORY_GET_SUCCESS("주문 내역 조회에 성공하였습니다.");
 
     private final String msg;
 
