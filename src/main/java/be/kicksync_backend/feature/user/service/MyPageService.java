@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +32,10 @@ public class MyPageService {
     public void updateProfile(String username, ProfileUpdateRequestDto requestDto) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (Objects.equals(user.getNickname(), requestDto.getNickname())) {
+            return;
+        }
 
         userRepository.findByNickname(requestDto.getNickname()).ifPresent(u -> {
             if (!u.getId().equals(user.getId())) {

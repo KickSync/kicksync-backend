@@ -24,7 +24,7 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 250)
     private String password;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 20)
     private String nickname;
 
     @Column(nullable = false)
@@ -47,6 +47,6 @@ public class User extends BaseTimeEntity {
     }
 
     public void updateNickname(String nickname) {
-        this.nickname = nickname;
+        this.nickname = nickname == null ? null : nickname.strip();
     }
 }

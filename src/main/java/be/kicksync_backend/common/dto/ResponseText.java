@@ -7,7 +7,7 @@ public enum ResponseText {
 
     // Auth
     ADMIN_SIGNUP_SUCCESS("관리자 등록이 완료되었습니다."),
-    ADMIN_LOGIN_SUCCESS("관리자 로그인에 성공했습니다."),
+    ADMIN_LOGIN_SUCCESS("관리자 로그인에 성공하였습니다."),
     USER_SIGNUP_SUCCESS("회원가입에 성공하였습니다."),
     USER_LOGIN_SUCCESS("로그인에 성공하였습니다."),
     LOGOUT_SUCCESS("로그아웃에 성공하였습니다."),
