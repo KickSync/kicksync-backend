@@ -3,11 +3,15 @@ package be.kicksync_backend.feature.product.dto;
 import be.kicksync_backend.feature.product.entity.Product;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class ProductCreateRequestDto {
     private String name;

@@ -1,6 +1,8 @@
 package be.kicksync_backend.feature.user.entity;
 
 import be.kicksync_backend.common.entity.BaseTimeEntity;
+import be.kicksync_backend.common.exception.CustomException;
+import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.feature.order.entity.Order;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,7 +26,7 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 250)
     private String password;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 20)
     private String nickname;
 
     @Column(nullable = false)
@@ -47,6 +49,14 @@ public class User extends BaseTimeEntity {
     }
 
     public void updateNickname(String nickname) {
-        this.nickname = nickname;
+        if (nickname == null) {
+            this.nickname = null;
+            return;
+        }
+        String v = nickname.strip();
+        if (v.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_NICKNAME);
+        }
+        this.nickname = v;
     }
 }

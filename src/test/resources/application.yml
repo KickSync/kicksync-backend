@@ -6,16 +6,14 @@ spring:
     show-sql: true # 테스트 시 SQL 쿼리 확인
 
   datasource:
-    url: jdbc:h2:mem:testdb # 테스트용 인메모리 DB
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE  # 테스트용 인메모리 DB (MySQL 호환)
     driver-class-name: org.h2.Driver
     username: sa
     password:
 
-jwt:
   secret:
-    key: VEVTVF9KV1RfU0VDUkVUX0tFWV9URVNUX0pXVF9TRUNSRVRfS0VZX1RFU1RfSldUX1NFQ1JFVF9LRVk= # 테스트용 시크릿 키
+    key: ${JWT_SECRET_KEY}
   access:
-    expiration: 1800000 # 30분
+    expiration: ${JWT_ACCESS_EXPIRATION:1800000}
   refresh:
-    expiration: 604800000 # 7일
-
+    expiration: ${JWT_REFRESH_EXPIRATION:604800000}

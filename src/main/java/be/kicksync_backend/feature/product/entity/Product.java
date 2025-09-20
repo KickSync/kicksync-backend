@@ -21,12 +21,16 @@ public class Product extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
     private String model;
 
+    @Column(nullable = false)
     private LocalDate releaseDate;
 
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal retailPrice;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)

@@ -4,14 +4,18 @@ import be.kicksync_backend.feature.order.entity.Order;
 import be.kicksync_backend.feature.product.entity.Product;
 import be.kicksync_backend.feature.user.entity.User;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderCreateRequestDto {
     @NotNull
     private Long userId;
