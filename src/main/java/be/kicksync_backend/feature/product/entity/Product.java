@@ -30,7 +30,7 @@ public class Product extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDate releaseDate;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal retailPrice;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
