@@ -24,7 +24,8 @@ public enum ErrorCode {
     DROP_EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 드롭 이벤트를 찾을 수 없습니다."),
 
     // Product
-    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다.");
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
+    PRODUCT_IN_USE(HttpStatus.CONFLICT, "해당 상품은 주문 또는 드롭 이벤트에서 사용 중이므로 삭제할 수 없습니다.");
 
     private final HttpStatus status;
     private final String message;

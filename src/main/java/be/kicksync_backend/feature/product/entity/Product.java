@@ -33,15 +33,15 @@ public class Product extends BaseTimeEntity {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal retailPrice;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product")
     private List<DropEvent> dropEvents = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product")
     private List<Order> orders = new ArrayList<>();
 
     public void update(String name, String model, LocalDate releaseDate, BigDecimal retailPrice) {
-        this.name = name;
-        this.model = model;
+        this.name = name != null ? name.trim() : null;
+        this.model = model != null ? model.trim() : null;
         this.releaseDate = releaseDate;
         this.retailPrice = retailPrice;
     }

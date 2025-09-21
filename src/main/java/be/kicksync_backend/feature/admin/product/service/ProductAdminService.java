@@ -2,10 +2,12 @@ package be.kicksync_backend.feature.admin.product.service;
 
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
+import be.kicksync_backend.feature.order.repository.OrderRepository;
 import be.kicksync_backend.feature.product.dto.ProductCreateRequestDto;
 import be.kicksync_backend.feature.product.dto.ProductResponseDto;
 import be.kicksync_backend.feature.product.dto.ProductUpdateRequestDto;
 import be.kicksync_backend.feature.product.entity.Product;
+import be.kicksync_backend.feature.product.repository.DropEventRepository;
 import be.kicksync_backend.feature.product.repository.ProductRepository;
 import be.kicksync_backend.feature.product.service.ProductQueryService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductAdminService {
     private final ProductRepository productRepository;
     private final ProductQueryService productQueryService;
+    private final OrderRepository orderRepository;
+    private final DropEventRepository dropEventRepository;
 
     public ProductResponseDto createProduct(ProductCreateRequestDto requestDto) {
         Product product = requestDto.toEntity();
@@ -48,6 +52,11 @@ public class ProductAdminService {
     public void deleteProduct(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        if (orderRepository.existsByProductId(productId) || dropEventRepository.existsByProductId(productId)) {
+            throw new CustomException(ErrorCode.PRODUCT_IN_USE);
+        }
+
         productRepository.delete(product);
     }
 } 
