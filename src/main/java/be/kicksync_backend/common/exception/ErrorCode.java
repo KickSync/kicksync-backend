@@ -25,7 +25,8 @@ public enum ErrorCode {
 
     // Product
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
-    PRODUCT_IN_USE(HttpStatus.CONFLICT, "해당 상품은 주문 또는 드롭 이벤트에서 사용 중이므로 삭제할 수 없습니다.");
+    PRODUCT_IN_USE(HttpStatus.CONFLICT, "해당 상품은 주문 또는 드롭 이벤트에서 사용 중이므로 삭제할 수 없습니다."),
+    PRODUCT_UPDATE_CONFLICT(HttpStatus.CONFLICT, "다른 관리자에 의해 정보가 수정되었습니다. 다시 시도해주세요.");
 
     private final HttpStatus status;
     private final String message;
