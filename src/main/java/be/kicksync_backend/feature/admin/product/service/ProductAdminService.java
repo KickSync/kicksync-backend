@@ -7,18 +7,19 @@ import be.kicksync_backend.feature.product.dto.ProductResponseDto;
 import be.kicksync_backend.feature.product.dto.ProductUpdateRequestDto;
 import be.kicksync_backend.feature.product.entity.Product;
 import be.kicksync_backend.feature.product.repository.ProductRepository;
+import be.kicksync_backend.feature.product.service.ProductQueryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class ProductAdminService {
     private final ProductRepository productRepository;
+    private final ProductQueryService productQueryService;
 
     public ProductResponseDto createProduct(ProductCreateRequestDto requestDto) {
         Product product = requestDto.toEntity();
@@ -27,17 +28,13 @@ public class ProductAdminService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponseDto> getAllProducts() {
-        return productRepository.findAll().stream()
-                .map(ProductResponseDto::new)
-                .collect(Collectors.toList());
+    public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
+        return productQueryService.getAllProducts(pageable);
     }
 
     @Transactional(readOnly = true)
     public ProductResponseDto getProduct(Long productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-        return new ProductResponseDto(product);
+        return productQueryService.getProduct(productId);
     }
 
     public ProductResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto) {

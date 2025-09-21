@@ -9,12 +9,13 @@ import be.kicksync_backend.feature.user.dto.UserProfileResponseDto;
 import be.kicksync_backend.feature.user.service.MyPageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/mypage")
@@ -65,9 +66,11 @@ public class MyPageController {
      * @return 사용자 주문 내역 목록
      */
     @GetMapping("/orders")
-    public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getMyOrderHistory(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        List<OrderResponseDto> orderHistory = myPageService.getOrderHistory(userDetails.getUsername());
-        ApiResponse<List<OrderResponseDto>> response = ApiResponse.<List<OrderResponseDto>>builder()
+    public ResponseEntity<ApiResponse<Page<OrderResponseDto>>> getMyOrderHistory(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
+        Page<OrderResponseDto> orderHistory = myPageService.getOrderHistory(userDetails.getUsername(), pageable);
+        ApiResponse<Page<OrderResponseDto>> response = ApiResponse.<Page<OrderResponseDto>>builder()
                 .msg(ResponseText.ORDER_HISTORY_GET_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
                 .data(orderHistory)

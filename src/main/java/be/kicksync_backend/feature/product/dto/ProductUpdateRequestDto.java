@@ -19,10 +19,10 @@ public class ProductUpdateRequestDto {
     private String model;
 
     @NotNull(message = "출시일은 필수 항목입니다.")
-    @FutureOrPresent(message = "출시일은 현재이거나 미래의 날짜여야 합니다.")
+    @PastOrPresent(message = "출시일은 미래일 수 없습니다.")
     private LocalDate releaseDate;
 
-    @NotNull(message = "리테일가는 필수 항목입니다.")
-    @Positive(message = "리테일가는 0보다 커야 합니다.")
+    @NotNull(message = "소매가는 필수 항목입니다.")
+    @Positive(message = "소매가는 0보다 커야 합니다.")
     private BigDecimal retailPrice;
 }

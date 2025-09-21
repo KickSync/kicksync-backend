@@ -5,14 +5,15 @@ import be.kicksync_backend.common.dto.ResponseText;
 import be.kicksync_backend.feature.product.dto.ProductResponseDto;
 import be.kicksync_backend.feature.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,9 +28,10 @@ public class ProductController {
      * @return 모든 상품 정보 리스트
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ProductResponseDto>>> getAllProducts() {
-        List<ProductResponseDto> products = productService.getAllProducts();
-        ApiResponse<List<ProductResponseDto>> response = ApiResponse.<List<ProductResponseDto>>builder()
+    public ResponseEntity<ApiResponse<Page<ProductResponseDto>>> getAllProducts(
+            @PageableDefault(size = 20, sort = "id") Pageable pageable) {
+        Page<ProductResponseDto> products = productService.getAllProducts(pageable);
+        ApiResponse<Page<ProductResponseDto>> response = ApiResponse.<Page<ProductResponseDto>>builder()
                 .msg(ResponseText.GET_PRODUCTS_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
                 .data(products)
