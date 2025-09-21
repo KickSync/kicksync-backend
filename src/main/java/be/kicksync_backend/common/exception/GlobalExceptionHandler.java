@@ -1,6 +1,7 @@
 package be.kicksync_backend.common.exception;
 
 import be.kicksync_backend.common.dto.ErrorResponse;
+import jakarta.persistence.OptimisticLockException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,4 +23,11 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse(errorCode.getMessage());
         return new ResponseEntity<>(response, errorCode.getStatus());
     }
-} 
+
+    @ExceptionHandler(OptimisticLockException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLockException(OptimisticLockException e) {
+        ErrorCode errorCode = ErrorCode.PRODUCT_UPDATE_CONFLICT;
+        ErrorResponse response = new ErrorResponse(errorCode.getMessage());
+        return new ResponseEntity<>(response, errorCode.getStatus());
+    }
+}
