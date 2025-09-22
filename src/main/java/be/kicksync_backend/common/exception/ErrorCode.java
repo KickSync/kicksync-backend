@@ -37,10 +37,14 @@ public enum ErrorCode {
     PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "결제 금액이 일치하지 않습니다."),
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 결제 내역을 찾을 수 없습니다."),
     PAYMENT_ALREADY_CANCELLED(HttpStatus.CONFLICT, "이미 취소된 결제입니다."),
+    PAYMENT_CANCEL_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "결제 취소에 실패했습니다."),
 
     // S3
     FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
-    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "잘못된 형식의 파일입니다.");
+    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "잘못된 형식의 파일입니다."),
+
+    // Common
+    DATABASE_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "데이터베이스 업데이트에 실패했습니다. 관리자에게 문의하세요.");
 
     private final HttpStatus status;
     private final String message;

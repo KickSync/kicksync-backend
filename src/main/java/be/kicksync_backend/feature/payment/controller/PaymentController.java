@@ -47,7 +47,6 @@ public class PaymentController {
      *
      * @param orderId 주문 ID
      * @return 결제 내역
-     *
      */
     @GetMapping("/order/{orderId}")
     public ResponseEntity<ApiResponse<PaymentResponseDto>> getPaymentByOrderId(@PathVariable Long orderId) {
@@ -96,6 +95,4 @@ public class PaymentController {
                 .build();
         return ResponseEntity.ok(apiResponse);
     }
-
-
 }
