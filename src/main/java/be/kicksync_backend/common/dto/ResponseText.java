@@ -24,7 +24,13 @@ public enum ResponseText {
     GET_PRODUCTS_SUCCESS("상품 전체 조회에 성공하였습니다."),
     GET_PRODUCT_SUCCESS("상품 단건 조회에 성공하였습니다."),
     UPDATE_PRODUCT_SUCCESS("상품 수정에 성공하였습니다."),
-    DELETE_PRODUCT_SUCCESS("상품 삭제에 성공하였습니다.");
+    DELETE_PRODUCT_SUCCESS("상품 삭제에 성공하였습니다."),
+
+    // Payment
+    PAYMENT_VERIFICATION_SUCCESS("결제 검증이 완료되었습니다."),
+    PAYMENT_CANCEL_SUCCESS("결제가 취소되었습니다."),
+    PAYMENT_FOUND_SUCCESS("결제 내역을 찾았습니다."),
+    PAYMENT_HISTORY_FOUND_SUCCESS("결제 내역 목록을 찾았습니다.");
 
     private final String msg;
 
