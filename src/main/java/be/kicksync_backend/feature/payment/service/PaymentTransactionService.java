@@ -29,6 +29,7 @@ public class PaymentTransactionService {
         }
 
         Payment payment = Payment.builder()
+                .partnerId(order.getProduct().getPartnerId())
                 .userId(order.getUser().getId())
                 .orderId(order.getId())
                 .paymentAmount(paymentInfo.getAmount())
