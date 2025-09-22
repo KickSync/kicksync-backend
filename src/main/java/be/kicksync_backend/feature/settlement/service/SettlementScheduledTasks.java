@@ -6,6 +6,7 @@ import be.kicksync_backend.feature.settlement.entity.Settlement;
 import be.kicksync_backend.feature.settlement.repository.SettlementRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,7 @@ public class SettlementScheduledTasks {
     private final SettlementRepository settlementRepository;
 
     @Scheduled(cron = "0 0 2 * * ?")
+    @SchedulerLock(name = "dailySettlementTask")
     public void dailySettlement() {
         log.info("Daily settlement batch job started.");
 
