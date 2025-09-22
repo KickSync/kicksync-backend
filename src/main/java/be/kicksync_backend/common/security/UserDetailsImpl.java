@@ -1,6 +1,7 @@
 package be.kicksync_backend.common.security;
 
 import be.kicksync_backend.feature.user.entity.User;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,12 +10,14 @@ import java.util.Collection;
 import java.util.List;
 
 public class UserDetailsImpl implements UserDetails {
-
+    @Getter
+    private final User user;
     private final String username;
     private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(String username, String password, Collection<? extends GrantedAuthority> authorities) {
+    public UserDetailsImpl(User user, String username, String password, Collection<? extends GrantedAuthority> authorities) {
+        this.user = user;
         this.username = username;
         this.password = password;
         this.authorities = authorities;
@@ -25,6 +28,7 @@ public class UserDetailsImpl implements UserDetails {
         String authority = roleName.startsWith("ROLE_") ? roleName : "ROLE_" + roleName;
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(authority));
         return new UserDetailsImpl(
+                user,
                 user.getUsername(),
                 user.getPassword(),
                 authorities);

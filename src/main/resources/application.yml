@@ -23,10 +23,19 @@ spring:
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
 
-  jwt:
-    secret:
-      key: ${JWT_SECRET_KEY}
-    access:
-      expiration: ${JWT_ACCESS_EXPIRATION}
-    refresh:
-      expiration: ${JWT_REFRESH_EXPIRATION}
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY}
+  access:
+    expiration: ${JWT_ACCESS_EXPIRATION}
+  refresh:
+    expiration: ${JWT_REFRESH_EXPIRATION}
+
+iamport:
+  api:
+    key: ${IAMPORT_KEY}
+    secret: ${IAMPORT_SECRET_KEY}
+
+toss:
+  api:
+    key: ${TOSS_KEY}
