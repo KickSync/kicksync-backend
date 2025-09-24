@@ -35,6 +35,6 @@ public class PaymentResponseDto {
     public static List<PaymentResponseDto> from(List<Payment> payments) {
         return payments.stream()
                 .map(PaymentResponseDto::from)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

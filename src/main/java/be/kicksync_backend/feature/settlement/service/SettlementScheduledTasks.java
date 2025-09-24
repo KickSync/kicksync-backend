@@ -91,6 +91,6 @@ public class SettlementScheduledTasks {
                         .totalAmount(entry.getValue())
                         .paymentDate(settlementDate)
                         .build())
-                .collect(Collectors.toList());
+                .toList();
     }
 }
