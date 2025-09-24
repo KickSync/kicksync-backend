@@ -28,6 +28,14 @@ public class PaymentTransactionService {
             return paymentRepository.findByImpUid(paymentInfo.getImpUid()).get();
         }
 
+        String fullCardNumber = paymentInfo.getCardNumber();
+        String lastFourDigits = null;
+        if (fullCardNumber != null && !fullCardNumber.isBlank() && fullCardNumber.length() > 4) {
+            lastFourDigits = fullCardNumber.substring(fullCardNumber.length() - 4);
+        } else if (fullCardNumber != null && !fullCardNumber.isBlank()) {
+            lastFourDigits = fullCardNumber;
+        }
+
         Payment payment = Payment.builder()
                 .partnerId(order.getProduct().getPartnerId())
                 .userId(order.getUser().getId())
@@ -41,7 +49,7 @@ public class PaymentTransactionService {
                 .pgTid(paymentInfo.getPgTid())
                 .status(paymentInfo.getStatus())
                 .cardName(paymentInfo.getCardName())
-                .cardNumber(paymentInfo.getCardNumber())
+                .cardNumber(lastFourDigits)
                 .build();
         return paymentRepository.save(payment);
     }

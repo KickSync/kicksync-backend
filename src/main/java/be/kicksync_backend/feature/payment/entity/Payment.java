@@ -19,12 +19,13 @@ public class Payment extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private Long partnerId;
 
     @Column(nullable = false)
     private Long userId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private Long orderId;
 
     @Column(nullable = false, precision = 15, scale = 2)
@@ -33,16 +34,36 @@ public class Payment extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDateTime paymentDate;
 
+    @Column(nullable = false, unique = true, length = 100)
     private String impUid;
+
+    @Column(nullable = false, length = 50)
     private String paymentMethod;
+
+    @Column(nullable = false, unique = true, length = 100)
     private String merchantUid;
+
+    @Column(nullable = false, length = 50)
     private String pgProvider;
+
+    @Column(nullable = false, length = 50)
     private String pgType;
+
+    @Column(nullable = false, length = 100)
     private String pgTid;
+
+    @Column(nullable = false, length = 20)
     private String status;
+
+    @Column(length = 50)
     private String cardName;
+
+    @Column(length = 4)
     private String cardNumber;
+
+    @Column(length = 255)
     private String cancelReason;
+
     private LocalDateTime cancelledAt;
 
 
