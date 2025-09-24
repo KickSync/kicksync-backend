@@ -27,20 +27,14 @@ public class PaymentTransactionService {
             return paymentRepository.findByImpUid(paymentInfo.getImpUid()).get();
         }
 
-        String fullCardNumber = paymentInfo.getCardNumber();
-        String lastFourDigits = null;
-        if (fullCardNumber != null && !fullCardNumber.isBlank() && fullCardNumber.length() > 4) {
-            lastFourDigits = fullCardNumber.substring(fullCardNumber.length() - 4);
-        } else if (fullCardNumber != null && !fullCardNumber.isBlank()) {
-            lastFourDigits = fullCardNumber;
-        }
+        String lastFourDigits = getLastFourDigits(paymentInfo);
 
         Payment payment = Payment.builder()
                 .partnerId(order.getProduct().getPartnerId())
                 .userId(order.getUser().getId())
                 .orderId(order.getId())
                 .paymentAmount(paymentInfo.getAmount())
-                .paymentDate(LocalDateTime.ofInstant(Instant.ofEpochSecond(paymentInfo.getPaidAt().getTime() / 1000), ZoneId.systemDefault()))
+                .paymentDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(paymentInfo.getPaidAt().getTime()), ZoneId.systemDefault()))
                 .impUid(paymentInfo.getImpUid())
                 .paymentMethod(paymentInfo.getPayMethod())
                 .merchantUid(paymentInfo.getMerchantUid())
@@ -51,5 +45,16 @@ public class PaymentTransactionService {
                 .cardNumber(lastFourDigits)
                 .build();
         return paymentRepository.save(payment);
+    }
+
+    private static String getLastFourDigits(com.siot.IamportRestClient.response.Payment paymentInfo) {
+        String fullCardNumber = paymentInfo.getCardNumber();
+        String lastFourDigits = null;
+        if (fullCardNumber != null && !fullCardNumber.isBlank() && fullCardNumber.length() > 4) {
+            lastFourDigits = fullCardNumber.substring(fullCardNumber.length() - 4);
+        } else if (fullCardNumber != null && !fullCardNumber.isBlank()) {
+            lastFourDigits = fullCardNumber;
+        }
+        return lastFourDigits;
     }
 }
