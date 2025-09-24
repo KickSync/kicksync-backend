@@ -22,7 +22,12 @@ configurations {
 
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
+    maven {
+        url 'https://jitpack.io'
+        content {
+            includeGroup 'com.github.iamport'
+        }
+    }
 }
 
 dependencies {
@@ -34,9 +39,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.security:spring-security-messaging'
 
-    // Spring Retry
+    // Spring Retry (+ AOP )
     implementation 'org.springframework.retry:spring-retry'
-    implementation 'org.springframework:spring-aspects'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 
     // ShedLock
     implementation 'net.javacrumbs.shedlock:shedlock-spring:5.10.0'
