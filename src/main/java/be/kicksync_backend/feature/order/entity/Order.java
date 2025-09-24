@@ -1,6 +1,7 @@
 package be.kicksync_backend.feature.order.entity;
 
 import be.kicksync_backend.common.entity.BaseTimeEntity;
+import be.kicksync_backend.feature.order.domain.type.OrderStatus;
 import be.kicksync_backend.feature.product.entity.Product;
 import be.kicksync_backend.feature.user.entity.User;
 import jakarta.persistence.*;
@@ -26,6 +27,10 @@ public class Order extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDateTime orderDate;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -34,4 +39,16 @@ public class Order extends BaseTimeEntity {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @Builder
+    public Order(BigDecimal finalPrice, LocalDateTime orderDate, User user, Product product) {
+        this.finalPrice = finalPrice;
+        this.orderDate = orderDate;
+        this.status = OrderStatus.PREPARING;
+        this.user = user;
+        this.product = product;
+    }
+
+    public void cancel() {
+        this.status = OrderStatus.CANCELLED;
+    }
 } 

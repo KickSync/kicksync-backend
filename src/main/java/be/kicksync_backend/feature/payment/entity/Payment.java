@@ -1,6 +1,7 @@
 package be.kicksync_backend.feature.payment.entity;
 
 import be.kicksync_backend.common.entity.BaseTimeEntity;
+import be.kicksync_backend.feature.payment.domain.type.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -52,8 +53,9 @@ public class Payment extends BaseTimeEntity {
     @Column(nullable = false, length = 100)
     private String pgTid;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String status;
+    private PaymentStatus status;
 
     @Column(length = 50)
     private String cardName;
@@ -68,7 +70,7 @@ public class Payment extends BaseTimeEntity {
 
 
     @Builder
-    public Payment(Long id, Long partnerId, Long userId, Long orderId, BigDecimal paymentAmount, LocalDateTime paymentDate, String impUid, String paymentMethod, String merchantUid, String pgProvider, String pgType, String pgTid, String status, String cardName, String cardNumber) {
+    public Payment(Long id, Long partnerId, Long userId, Long orderId, BigDecimal paymentAmount, LocalDateTime paymentDate, String impUid, String paymentMethod, String merchantUid, String pgProvider, String pgType, String pgTid, PaymentStatus status, String cardName, String cardNumber) {
         this.id = id;
         this.partnerId = partnerId;
         this.userId = userId;
@@ -86,12 +88,12 @@ public class Payment extends BaseTimeEntity {
         this.cardNumber = cardNumber;
     }
 
-    public void changeStatus(String status) {
+    public void changeStatus(PaymentStatus status) {
         this.status = status;
     }
 
     public void updateOnCancel(String reason) {
-        this.status = "cancelled";
+        this.status = PaymentStatus.CANCELLED;
         this.cancelReason = reason;
         this.cancelledAt = LocalDateTime.now();
     }

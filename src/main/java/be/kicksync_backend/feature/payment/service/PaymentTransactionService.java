@@ -3,6 +3,7 @@ package be.kicksync_backend.feature.payment.service;
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.feature.order.entity.Order;
+import be.kicksync_backend.feature.payment.domain.type.PaymentStatus;
 import be.kicksync_backend.feature.payment.entity.Payment;
 import be.kicksync_backend.feature.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +48,7 @@ public class PaymentTransactionService {
                 .merchantUid(paymentInfo.getMerchantUid())
                 .pgProvider(paymentInfo.getPgProvider())
                 .pgTid(paymentInfo.getPgTid())
-                .status(paymentInfo.getStatus())
+                .status(PaymentStatus.fromValue(paymentInfo.getStatus()))
                 .cardName(paymentInfo.getCardName())
                 .cardNumber(lastFourDigits)
                 .build();
@@ -59,7 +60,7 @@ public class PaymentTransactionService {
         Payment payment = paymentRepository.findByImpUid(paymentInfo.getImpUid())
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
         try {
-            payment.changeStatus(paymentInfo.getStatus());
+            payment.changeStatus(PaymentStatus.fromValue(paymentInfo.getStatus()));
             return paymentRepository.save(payment);
         } catch (Exception e) {
             log.error("[CRITICAL] PortOne 결제 취소는 성공했으나 DB 상태 업데이트 실패! 수동 확인 필요. imp_uid: {}", paymentInfo.getImpUid());

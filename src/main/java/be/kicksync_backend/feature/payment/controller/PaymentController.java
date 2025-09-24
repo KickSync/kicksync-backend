@@ -3,12 +3,14 @@ package be.kicksync_backend.feature.payment.controller;
 import be.kicksync_backend.common.dto.ApiResponse;
 import be.kicksync_backend.common.dto.ResponseText;
 import be.kicksync_backend.common.security.UserDetailsImpl;
-import be.kicksync_backend.feature.payment.dto.PaymentCancelRequestDto;
+import be.kicksync_backend.feature.order.dto.OrderCancelRequestDto;
+import be.kicksync_backend.feature.order.service.OrderService;
 import be.kicksync_backend.feature.payment.dto.PaymentRequestDto;
 import be.kicksync_backend.feature.payment.dto.PaymentResponseDto;
 import be.kicksync_backend.feature.payment.entity.Payment;
 import be.kicksync_backend.feature.payment.service.PaymentService;
 import com.siot.IamportRestClient.exception.IamportResponseException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,20 +22,24 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/payment")
+@RequestMapping("/api/payments")
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final OrderService orderService;
 
     /**
      * 결제 검증 API
      *
-     * @param requestDto 결제 요청 데이터
+     * @param requestDto  결제 요청 데이터
+     * @param userDetails 현재 인증된 사용자 정보
      * @return 검증된 결제 정보
      */
     @PostMapping("/portone")
-    public ResponseEntity<ApiResponse<Payment>> verifyPayment(@RequestBody PaymentRequestDto requestDto) throws IOException, IamportResponseException {
-        Payment payment = paymentService.verifyPayment(requestDto);
+    public ResponseEntity<ApiResponse<Payment>> verifyPayment(
+            @Valid @RequestBody PaymentRequestDto requestDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException, IamportResponseException {
+        Payment payment = paymentService.verifyPayment(requestDto, userDetails.getUser().getId());
         ApiResponse<Payment> apiResponse = ApiResponse.<Payment>builder()
                 .msg(ResponseText.PAYMENT_VERIFICATION_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
@@ -45,12 +51,15 @@ public class PaymentController {
     /**
      * 주문 ID로 결제 내역 조회 API
      *
-     * @param orderId 주문 ID
+     * @param orderId     주문 ID
+     * @param userDetails 현재 인증된 사용자 정보
      * @return 결제 내역
      */
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<ApiResponse<PaymentResponseDto>> getPaymentByOrderId(@PathVariable Long orderId) {
-        Payment payment = paymentService.getPaymentByOrderId(orderId);
+    public ResponseEntity<ApiResponse<PaymentResponseDto>> getPaymentByOrderId(
+            @PathVariable Long orderId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Payment payment = paymentService.getPaymentByOrderId(orderId, userDetails.getUser().getId());
         ApiResponse<PaymentResponseDto> apiResponse = ApiResponse.<PaymentResponseDto>builder()
                 .msg(ResponseText.PAYMENT_FOUND_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
@@ -77,21 +86,22 @@ public class PaymentController {
     }
 
     /**
-     * 결제 취소 API
+     * 주문 취소 API
      *
+     * @param orderId     취소할 주문 ID
      * @param cancelDto   결제 취소 요청 데이터
      * @param userDetails 현재 인증된 사용자 정보
      * @return 취소된 결제 정보
      */
-    @PostMapping("/cancel")
-    public ResponseEntity<ApiResponse<Payment>> cancelPayment(
-            @RequestBody PaymentCancelRequestDto cancelDto,
+    @PostMapping("/order/{orderId}/cancel")
+    public ResponseEntity<ApiResponse<Void>> cancelPayment(
+            @PathVariable Long orderId,
+            @RequestBody(required = false) OrderCancelRequestDto cancelDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException, IamportResponseException {
-        Payment payment = paymentService.cancelPayment(cancelDto, userDetails.getUser().getId());
-        ApiResponse<Payment> apiResponse = ApiResponse.<Payment>builder()
+        orderService.cancelOrder(orderId, cancelDto, userDetails.getUser().getId());
+        ApiResponse<Void> apiResponse = ApiResponse.<Void>builder()
                 .msg(ResponseText.PAYMENT_CANCEL_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
-                .data(payment)
                 .build();
         return ResponseEntity.ok(apiResponse);
     }

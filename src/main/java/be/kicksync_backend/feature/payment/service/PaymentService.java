@@ -5,7 +5,6 @@ import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.feature.order.entity.Order;
 import be.kicksync_backend.feature.order.repository.OrderRepository;
 import be.kicksync_backend.feature.payment.util.PaymentClient;
-import be.kicksync_backend.feature.payment.dto.PaymentCancelRequestDto;
 import be.kicksync_backend.feature.payment.dto.PaymentRequestDto;
 import be.kicksync_backend.feature.payment.entity.Payment;
 import be.kicksync_backend.feature.payment.repository.PaymentRepository;
@@ -18,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -29,12 +27,16 @@ public class PaymentService {
     private final PaymentClient paymentClient;
     private final PaymentTransactionService paymentTransactionService;
 
-    public Payment verifyPayment(PaymentRequestDto requestDto) throws IamportResponseException, IOException {
+    public Payment verifyPayment(PaymentRequestDto requestDto, Long userId) throws IamportResponseException, IOException {
         IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = paymentClient.getPaymentInfoByImpUid(requestDto.getImpUid());
         com.siot.IamportRestClient.response.Payment paymentInfo = iamportResponse.getResponse();
 
         Order order = orderRepository.findById(requestDto.getOrderId())
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
+        }
 
         if (paymentInfo.getAmount().compareTo(order.getFinalPrice()) != 0) {
             throw new CustomException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
@@ -43,22 +45,20 @@ public class PaymentService {
         return paymentTransactionService.savePaymentRecord(paymentInfo, order);
     }
 
-    public Payment cancelPayment(PaymentCancelRequestDto cancelDto, Long userId) throws IamportResponseException, IOException {
-        Payment payment = paymentRepository.findByImpUid(cancelDto.getImpUid())
+    @Transactional
+    public void cancelPaymentForOrder(Long orderId, String reason) throws IamportResponseException, IOException {
+        Payment payment = paymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        if (!Objects.equals(payment.getUserId(), userId)) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACTION);
-        }
+        IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse =
+                paymentClient.cancelPaymentByImpUid(payment.getImpUid(), reason);
 
-        IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = paymentClient.cancelPaymentByImpUid(cancelDto);
-
-        return paymentTransactionService.updatePaymentStatusToCancelled(iamportResponse.getResponse());
+        payment.updateOnCancel(reason);
     }
 
     @Transactional(readOnly = true)
-    public Payment getPaymentByOrderId(Long orderId) {
-        return paymentRepository.findByOrderId(orderId)
+    public Payment getPaymentByOrderId(Long orderId, Long userId) {
+        return paymentRepository.findByOrderIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
     }
 
