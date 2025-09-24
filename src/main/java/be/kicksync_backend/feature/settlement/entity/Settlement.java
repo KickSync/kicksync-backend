@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "settlements")
 public class Settlement extends BaseTimeEntity {
@@ -20,7 +20,7 @@ public class Settlement extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "partner_id")
+    @Column(name = "partner_id", nullable = false)
     private Long partnerId;
 
     @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
@@ -31,6 +31,6 @@ public class Settlement extends BaseTimeEntity {
     @Builder.Default
     private SettlementStatus status = SettlementStatus.PENDING;
 
-    @Column(name = "payment_date")
-    private LocalDate paymentDate;
+    @Column(name = "settlement_date")
+    private LocalDate settlementDate;
 }

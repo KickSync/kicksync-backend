@@ -1,6 +1,7 @@
 package be.kicksync_backend.feature.settlement.service;
 
 import be.kicksync_backend.feature.payment.repository.PaymentRepository;
+import be.kicksync_backend.feature.settlement.domain.type.SettlementStatus;
 import be.kicksync_backend.feature.settlement.entity.Settlement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +57,7 @@ public class SettlementScheduledTasks {
     }
 
     private void bulkInsertSettlements(List<Settlement> settlements) {
-        String sql = "INSERT INTO settlements (partner_id, total_amount, payment_date, status) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO settlements (partner_id, total_amount, settlement_date, status) VALUES (?, ?, ?, ?)";
 
         jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
             @Override
@@ -64,8 +65,8 @@ public class SettlementScheduledTasks {
                 Settlement settlement = settlements.get(i);
                 ps.setLong(1, settlement.getPartnerId());
                 ps.setBigDecimal(2, settlement.getTotalAmount());
-                ps.setObject(3, settlement.getPaymentDate());
-                ps.setString(4, "COMPLETED");
+                ps.setObject(3, settlement.getSettlementDate());
+                ps.setString(4, String.valueOf(SettlementStatus.COMPLETED));
             }
 
             @Override
@@ -89,7 +90,7 @@ public class SettlementScheduledTasks {
                 .map(entry -> Settlement.builder()
                         .partnerId(entry.getKey())
                         .totalAmount(entry.getValue())
-                        .paymentDate(settlementDate)
+                        .settlementDate(settlementDate)
                         .build())
                 .toList();
     }

@@ -18,11 +18,11 @@ public class ProductUpdateRequestDto {
     @Size(max = 50, message = "모델명은 50자를 초과할 수 없습니다.")
     private String model;
 
-    @NotBlank(message = "출시일은 필수 항목입니다.")
+    @NotNull(message = "출시일은 필수 항목입니다.")
     @PastOrPresent(message = "출시일은 미래일 수 없습니다.")
     private LocalDate releaseDate;
 
-    @NotBlank(message = "소매가는 필수 항목입니다.")
+    @NotNull(message = "소매가는 필수 항목입니다.")
     @Positive(message = "소매가는 0보다 커야 합니다.")
     private BigDecimal retailPrice;
 }
