@@ -36,14 +36,14 @@ public class PaymentController {
      * @return 검증된 결제 정보
      */
     @PostMapping("/portone")
-    public ResponseEntity<ApiResponse<Payment>> verifyPayment(
+    public ResponseEntity<ApiResponse<PaymentResponseDto>> verifyPayment(
             @Valid @RequestBody PaymentRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException, IamportResponseException {
         Payment payment = paymentService.verifyPayment(requestDto, userDetails.getUser().getId());
-        ApiResponse<Payment> apiResponse = ApiResponse.<Payment>builder()
+        ApiResponse<PaymentResponseDto> apiResponse = ApiResponse.<PaymentResponseDto>builder()
                 .msg(ResponseText.PAYMENT_VERIFICATION_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
-                .data(payment)
+                .data(PaymentResponseDto.from(payment))
                 .build();
         return ResponseEntity.ok(apiResponse);
     }
