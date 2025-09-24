@@ -2,7 +2,6 @@ package be.kicksync_backend.feature.payment.util;
 
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
-import be.kicksync_backend.feature.order.dto.OrderCancelRequestDto;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.request.CancelData;
@@ -34,6 +33,11 @@ public class PaymentClient {
         this.iamportClient = new IamportClient(apiKey, apiSecret);
     }
 
+    @Retryable(
+            retryFor = {IamportResponseException.class, IOException.class},
+            maxAttempts = 2,
+            backoff = @Backoff(delay = 1000)
+    )
     public IamportResponse<Payment> getPaymentInfoByImpUid(String impUid) throws IamportResponseException, IOException {
         return iamportClient.paymentByImpUid(impUid);
     }
@@ -41,8 +45,7 @@ public class PaymentClient {
     @Retryable(
             retryFor = {IamportResponseException.class, IOException.class},
             maxAttempts = 2,
-            backoff = @Backoff(delay = 1000),
-            recover = "recoverCancelPayment"
+            backoff = @Backoff(delay = 1000)
     )
     public IamportResponse<Payment> cancelPaymentByImpUid(String impUid, String reason) throws IamportResponseException, IOException {
         CancelData cancelData = new CancelData(impUid, true);
@@ -51,17 +54,23 @@ public class PaymentClient {
     }
 
     @Recover
-    public IamportResponse<Payment> recoverCancelPayment(IamportResponseException e) {
+    public IamportResponse<Payment> recoverGetPaymentInfo(Exception e, String impUid) {
+        log.error("PortOne 결제 정보 조회 최종 실패 - impUid: {}, Exception: {}", impUid, e.getMessage());
+        throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED);
+    }
+
+    @Recover
+    public IamportResponse<Payment> recoverCancelPayment(IamportResponseException e, String impUid, String reason) {
         log.error("PortOne 결제 취소 최종 실패 - HTTP Status: {}, Message: {}", e.getHttpStatusCode(), e.getMessage());
-        if (e.getMessage().contains("이미 취소된 거래")) {
+        if (e.getMessage() != null && e.getMessage().contains("이미 취소된 거래")) {
             throw new CustomException(ErrorCode.PAYMENT_ALREADY_CANCELLED);
         }
         throw new CustomException(ErrorCode.PAYMENT_CANCEL_FAILED);
     }
 
     @Recover
-    public IamportResponse<Payment> recoverCancelPayment(IOException e) {
-        log.error("PortOne 통신 중 IOException 발생, Exception: {}", e.getMessage());
+    public IamportResponse<Payment> recoverCancelPayment(IOException e, String impUid, String reason) {
+        log.error("PortOne 통신 중 IOException 발생 - impUid: {}, Exception: {}", impUid, e.getMessage());
         throw new CustomException(ErrorCode.PAYMENT_CANCEL_FAILED);
     }
 }
