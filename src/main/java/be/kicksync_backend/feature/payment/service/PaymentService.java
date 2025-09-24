@@ -22,6 +22,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
+
+    private static final String PAID_STATUS = "paid";
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final PaymentClient paymentClient;
@@ -30,6 +32,10 @@ public class PaymentService {
     public Payment verifyPayment(PaymentRequestDto requestDto, Long userId) throws IamportResponseException, IOException {
         IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = paymentClient.getPaymentInfoByImpUid(requestDto.getImpUid());
         com.siot.IamportRestClient.response.Payment paymentInfo = iamportResponse.getResponse();
+
+        if (paymentInfo == null) {
+            throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED);
+        }
 
         Order order = orderRepository.findById(requestDto.getOrderId())
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
@@ -40,6 +46,14 @@ public class PaymentService {
 
         if (paymentInfo.getAmount().compareTo(order.getFinalPrice()) != 0) {
             throw new CustomException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
+        }
+
+        if (!order.getId().toString().equals(paymentInfo.getMerchantUid())) {
+            throw new CustomException(ErrorCode.PAYMENT_MERCHANT_UID_MISMATCH);
+        }
+
+        if (!PAID_STATUS.equalsIgnoreCase(paymentInfo.getStatus())) {
+            throw new CustomException(ErrorCode.PAYMENT_STATUS_NOT_PAID);
         }
 
         return paymentTransactionService.savePaymentRecord(paymentInfo, order);

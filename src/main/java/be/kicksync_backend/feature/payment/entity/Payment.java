@@ -88,10 +88,6 @@ public class Payment extends BaseTimeEntity {
         this.cardNumber = cardNumber;
     }
 
-    public void changeStatus(PaymentStatus status) {
-        this.status = status;
-    }
-
     public void updateOnCancel(String reason) {
         this.status = PaymentStatus.CANCELLED;
         this.cancelReason = reason;
