@@ -62,21 +62,26 @@ public class SettlementScheduledTasks {
     private void bulkInsertSettlements(List<Settlement> settlements) {
         String sql = "INSERT INTO settlements (partner_id, total_amount, settlement_date, status) VALUES (?, ?, ?, ?)";
 
-        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                Settlement settlement = settlements.get(i);
-                ps.setLong(1, settlement.getPartnerId());
-                ps.setBigDecimal(2, settlement.getTotalAmount());
-                ps.setObject(3, settlement.getSettlementDate());
-                ps.setString(4, String.valueOf(SettlementStatus.COMPLETED));
-            }
+        final int BATCH_SIZE = 1000;
+        for (int from = 0; from < settlements.size(); from += BATCH_SIZE) {
+            int to = Math.min(from + BATCH_SIZE, settlements.size());
+            List<Settlement> chunk = settlements.subList(from, to);
+            jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+                @Override
+                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                    Settlement settlement = chunk.get(i);
+                    ps.setLong(1, settlement.getPartnerId());
+                    ps.setBigDecimal(2, settlement.getTotalAmount());
+                    ps.setObject(3, settlement.getSettlementDate());
+                    ps.setString(4, String.valueOf(SettlementStatus.COMPLETED));
+                }
 
-            @Override
-            public int getBatchSize() {
-                return 1000;
-            }
-        });
+                @Override
+                public int getBatchSize() {
+                    return chunk.size();
+                }
+            });
+        }
     }
 
     private Map<Long, BigDecimal> fetchAndAggregatePayments(LocalDateTime start, LocalDateTime end) {
