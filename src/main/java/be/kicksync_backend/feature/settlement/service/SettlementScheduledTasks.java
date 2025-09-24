@@ -1,10 +1,13 @@
 package be.kicksync_backend.feature.settlement.service;
 
+import be.kicksync_backend.feature.payment.domain.type.PaymentStatus;
+import be.kicksync_backend.feature.payment.dto.PartnerSettlementDto;
 import be.kicksync_backend.feature.payment.repository.PaymentRepository;
 import be.kicksync_backend.feature.settlement.domain.type.SettlementStatus;
 import be.kicksync_backend.feature.settlement.entity.Settlement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,11 +29,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SettlementScheduledTasks {
 
-    private static final String PAID_STATUS = "paid";
     private final PaymentRepository paymentRepository;
     private final JdbcTemplate jdbcTemplate;
 
     @Scheduled(cron = "0 * * * * ?")
+    @SchedulerLock(name = "dailySettlementTask")
     @Transactional
     public void dailySettlement() {
         long startTime = System.currentTimeMillis();
@@ -77,11 +80,11 @@ public class SettlementScheduledTasks {
     }
 
     private Map<Long, BigDecimal> fetchAndAggregatePayments(LocalDateTime start, LocalDateTime end) {
-        List<Object[]> results = paymentRepository.findPartnerTotalsByStatusAndPaymentDateBetween(PAID_STATUS, start, end);
+        List<PartnerSettlementDto> results = paymentRepository.findPartnerTotalsByStatusAndPaymentDateBetween(PaymentStatus.PAID, start, end);
         return results.stream()
                 .collect(Collectors.toMap(
-                        row -> (Long) row[0],
-                        row -> (BigDecimal) row[1]
+                        PartnerSettlementDto::getPartnerId,
+                        PartnerSettlementDto::getTotalAmount
                 ));
     }
 

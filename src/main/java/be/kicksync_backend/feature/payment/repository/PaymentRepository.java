@@ -1,5 +1,7 @@
 package be.kicksync_backend.feature.payment.repository;
 
+import be.kicksync_backend.feature.payment.domain.type.PaymentStatus;
+import be.kicksync_backend.feature.payment.dto.PartnerSettlementDto;
 import be.kicksync_backend.feature.payment.entity.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,12 +20,12 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findByOrderId(Long orderId);
 
-    @Query("SELECT p.partnerId, SUM(p.paymentAmount) " +
+    @Query("SELECT p.partnerId as partnerId, SUM(p.paymentAmount) as totalAmount " +
             "FROM Payment p " +
             "WHERE p.status = :status AND p.paymentDate BETWEEN :start AND :end AND p.partnerId IS NOT NULL " +
             "GROUP BY p.partnerId")
-    List<Object[]> findPartnerTotalsByStatusAndPaymentDateBetween(
-            @Param("status") String status,
+    List<PartnerSettlementDto> findPartnerTotalsByStatusAndPaymentDateBetween(
+            @Param("status") PaymentStatus status,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
     );
