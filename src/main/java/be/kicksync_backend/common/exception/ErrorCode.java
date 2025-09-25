@@ -29,13 +29,18 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
     PRODUCT_IN_USE(HttpStatus.CONFLICT, "해당 상품은 주문 또는 드롭 이벤트에서 사용 중이므로 삭제할 수 없습니다."),
     PRODUCT_UPDATE_CONFLICT(HttpStatus.CONFLICT, "다른 관리자에 의해 정보가 수정되었습니다. 다시 시도해주세요."),
-
-    // Order
-    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문을 찾을 수 없습니다."),
+    INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "재고가 부족합니다."),
 
     // Payment
     PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "결제 금액이 일치하지 않습니다."),
-    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 결제 내역을 찾을 수 없습니다."),
+    PAYMENT_MERCHANT_UID_MISMATCH(HttpStatus.BAD_REQUEST, "주문번호가 일치하지 않습니다."),
+    PAYMENT_STATUS_NOT_PAID(HttpStatus.BAD_REQUEST, "결제가 완료되지 않은 주문입니다."),
+    PAYMENT_VERIFICATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "결제 정보 조회에 실패했습니다."),
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제 정보를 찾을 수 없습니다."),
+    PAYMENT_NOT_FOUND_AFTER_DUPLICATION(HttpStatus.INTERNAL_SERVER_ERROR, "중복 저장 후 결제 정보를 찾을 수 없습니다."),
+
+    // Order
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
     PAYMENT_ALREADY_CANCELLED(HttpStatus.CONFLICT, "이미 취소된 결제입니다."),
     PAYMENT_CANCEL_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "결제 취소에 실패했습니다."),
 

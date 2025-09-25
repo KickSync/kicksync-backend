@@ -4,8 +4,14 @@ import be.kicksync_backend.feature.order.entity.Order;
 import be.kicksync_backend.feature.payment.domain.type.PaymentStatus;
 import be.kicksync_backend.feature.payment.entity.Payment;
 import be.kicksync_backend.feature.payment.repository.PaymentRepository;
+import be.kicksync_backend.common.exception.CustomException;
+import be.kicksync_backend.common.exception.ErrorCode;
+
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +28,10 @@ public class PaymentTransactionService {
 
     @Transactional
     public Payment savePaymentRecord(com.siot.IamportRestClient.response.Payment paymentInfo, Order order) {
-        if (paymentRepository.findByImpUid(paymentInfo.getImpUid()).isPresent()) {
+        Optional<Payment> existingPayment = paymentRepository.findByImpUid(paymentInfo.getImpUid());
+        if (existingPayment.isPresent()) {
             log.warn("이미 처리된 결제 검증입니다. impUid: {}", paymentInfo.getImpUid());
-            return paymentRepository.findByImpUid(paymentInfo.getImpUid()).get();
+            return existingPayment.get();
         }
 
         String lastFourDigits = getLastFourDigits(paymentInfo);
@@ -44,7 +51,13 @@ public class PaymentTransactionService {
                 .cardName(paymentInfo.getCardName())
                 .cardNumber(lastFourDigits)
                 .build();
-        return paymentRepository.save(payment);
+        try {
+            return paymentRepository.save(payment);
+        } catch (DataIntegrityViolationException e) {
+            log.warn("결제 정보 저장 중 중복 발생 (impUid: {}), 기존 결제 정보를 조회합니다.", paymentInfo.getImpUid());
+            return paymentRepository.findByImpUid(paymentInfo.getImpUid())
+                    .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND_AFTER_DUPLICATION));
+        }
     }
 
     private static String getLastFourDigits(com.siot.IamportRestClient.response.Payment paymentInfo) {
