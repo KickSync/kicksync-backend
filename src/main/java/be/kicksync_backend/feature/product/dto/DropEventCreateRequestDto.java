@@ -1,7 +1,7 @@
 package be.kicksync_backend.feature.product.dto;
 
-import be.kicksync_backend.feature.product.domain.type.DropEventStatus;
-import be.kicksync_backend.feature.product.domain.type.DropEventType;
+import be.kicksync_backend.feature.product.entity.DropEventStatus;
+import be.kicksync_backend.feature.product.entity.DropEventType;
 import be.kicksync_backend.feature.product.entity.DropEvent;
 import be.kicksync_backend.feature.product.entity.Product;
 import lombok.Builder;

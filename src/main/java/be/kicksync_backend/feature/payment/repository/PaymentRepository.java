@@ -1,6 +1,6 @@
 package be.kicksync_backend.feature.payment.repository;
 
-import be.kicksync_backend.feature.payment.domain.type.PaymentStatus;
+import be.kicksync_backend.feature.payment.entity.PaymentStatus;
 import be.kicksync_backend.feature.payment.dto.PartnerSettlementDto;
 import be.kicksync_backend.feature.payment.entity.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;

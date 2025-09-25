@@ -1,6 +1,6 @@
 package be.kicksync_backend.feature.order.dto;
 
-import be.kicksync_backend.feature.order.domain.type.OrderStatus;
+import be.kicksync_backend.feature.order.entity.OrderStatus;
 import be.kicksync_backend.feature.order.entity.Order;
 import lombok.Getter;
 

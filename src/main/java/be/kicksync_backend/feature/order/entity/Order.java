@@ -1,7 +1,6 @@
 package be.kicksync_backend.feature.order.entity;
 
 import be.kicksync_backend.common.entity.BaseTimeEntity;
-import be.kicksync_backend.feature.order.domain.type.OrderStatus;
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.feature.payment.entity.Payment;

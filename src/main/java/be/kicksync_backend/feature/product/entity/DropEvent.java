@@ -1,8 +1,6 @@
 package be.kicksync_backend.feature.product.entity;
 
 import be.kicksync_backend.common.entity.BaseTimeEntity;
-import be.kicksync_backend.feature.product.domain.type.DropEventStatus;
-import be.kicksync_backend.feature.product.domain.type.DropEventType;
 import jakarta.persistence.*;
 import lombok.*;
 

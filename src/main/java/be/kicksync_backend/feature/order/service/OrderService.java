@@ -2,7 +2,7 @@ package be.kicksync_backend.feature.order.service;
 
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
-import be.kicksync_backend.feature.order.domain.type.OrderStatus;
+import be.kicksync_backend.feature.order.entity.OrderStatus;
 import be.kicksync_backend.feature.order.dto.OrderCancelRequestDto;
 import be.kicksync_backend.feature.order.dto.OrderCreateRequestDto;
 import be.kicksync_backend.feature.order.dto.OrderResponseDto;

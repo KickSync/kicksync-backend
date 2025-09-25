@@ -1,4 +1,4 @@
-package be.kicksync_backend.feature.payment.domain.type;
+package be.kicksync_backend.feature.payment.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

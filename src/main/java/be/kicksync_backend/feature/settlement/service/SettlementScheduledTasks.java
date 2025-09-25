@@ -1,9 +1,9 @@
 package be.kicksync_backend.feature.settlement.service;
 
-import be.kicksync_backend.feature.payment.domain.type.PaymentStatus;
+import be.kicksync_backend.feature.payment.entity.PaymentStatus;
 import be.kicksync_backend.feature.payment.dto.PartnerSettlementDto;
 import be.kicksync_backend.feature.payment.repository.PaymentRepository;
-import be.kicksync_backend.feature.settlement.domain.type.SettlementStatus;
+import be.kicksync_backend.feature.settlement.entity.SettlementStatus;
 import be.kicksync_backend.feature.settlement.entity.Settlement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

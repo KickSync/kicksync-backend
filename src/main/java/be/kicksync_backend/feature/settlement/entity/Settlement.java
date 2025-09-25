@@ -1,7 +1,6 @@
 package be.kicksync_backend.feature.settlement.entity;
 
 import be.kicksync_backend.common.entity.BaseTimeEntity;
-import be.kicksync_backend.feature.settlement.domain.type.SettlementStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

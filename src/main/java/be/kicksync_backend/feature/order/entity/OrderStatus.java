@@ -1,4 +1,4 @@
-package be.kicksync_backend.feature.order.domain.type;
+package be.kicksync_backend.feature.order.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
