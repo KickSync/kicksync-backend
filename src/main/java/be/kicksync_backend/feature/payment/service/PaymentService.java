@@ -2,6 +2,7 @@ package be.kicksync_backend.feature.payment.service;
 
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
+import be.kicksync_backend.feature.order.entity.OrderStatus;
 import be.kicksync_backend.feature.order.entity.Order;
 import be.kicksync_backend.feature.order.repository.OrderRepository;
 import be.kicksync_backend.feature.payment.util.PaymentClient;
@@ -30,7 +31,12 @@ public class PaymentService {
     private final PaymentTransactionService paymentTransactionService;
 
     public Payment verifyPayment(PaymentRequestDto requestDto, Long userId) throws IamportResponseException, IOException {
-        IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = paymentClient.getPaymentInfoByImpUid(requestDto.getImpUid());
+        if (paymentRepository.findByImpUid(requestDto.getImpUid()).isPresent()) {
+            throw new CustomException(ErrorCode.PAYMENT_ALREADY_CANCELLED);
+        }
+
+        IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse =
+                paymentClient.getPaymentInfoByImpUid(requestDto.getImpUid());
         com.siot.IamportRestClient.response.Payment paymentInfo = iamportResponse.getResponse();
 
         if (paymentInfo == null) {
@@ -42,6 +48,10 @@ public class PaymentService {
 
         if (!order.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+
+        if (order.getStatus() != OrderStatus.PENDING_PAYMENT) {
+            throw new CustomException(ErrorCode.INVALID_ORDER_STATE);
         }
 
         if (paymentInfo.getAmount().compareTo(order.getFinalPrice()) != 0) {
@@ -56,7 +66,10 @@ public class PaymentService {
             throw new CustomException(ErrorCode.PAYMENT_STATUS_NOT_PAID);
         }
 
-        return paymentTransactionService.savePaymentRecord(paymentInfo, order);
+        Payment payment = paymentTransactionService.savePaymentRecord(paymentInfo, order);
+        order.processPaymentSuccess();
+
+        return payment;
     }
 
     @Transactional
@@ -66,6 +79,10 @@ public class PaymentService {
 
         IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse =
                 paymentClient.cancelPaymentByImpUid(payment.getImpUid(), reason);
+
+        if (iamportResponse.getResponse() == null) {
+            throw new CustomException(ErrorCode.PAYMENT_CANCEL_FAILED);
+        }
 
         payment.updateOnCancel(reason);
     }

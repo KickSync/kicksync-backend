@@ -1,8 +1,11 @@
 package be.kicksync_backend.feature.product.entity;
 
 import be.kicksync_backend.common.entity.BaseTimeEntity;
-import be.kicksync_backend.feature.order.entity.Order;
+import be.kicksync_backend.common.exception.CustomException;
+import be.kicksync_backend.common.exception.ErrorCode;
+import be.kicksync_backend.feature.order.entity.OrderItem;
 import jakarta.persistence.*;
+
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -36,19 +39,29 @@ public class Product extends BaseTimeEntity {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal retailPrice;
 
-    @Column(name = "partner_id")
+    @Column(nullable = false)
+    private Integer stock;
+
+    @Column(name = "partner_id", nullable = false)
     private Long partnerId;
 
     @OneToMany(mappedBy = "product")
     private List<DropEvent> dropEvents = new ArrayList<>();
 
     @OneToMany(mappedBy = "product")
-    private List<Order> orders = new ArrayList<>();
+    private List<OrderItem> orderItems = new ArrayList<>();
 
     public void update(String name, String model, LocalDate releaseDate, BigDecimal retailPrice) {
         this.name = name != null ? name.trim() : null;
         this.model = model != null ? model.trim() : null;
         this.releaseDate = releaseDate;
         this.retailPrice = retailPrice;
+    }
+
+    public void decreaseStock(Integer quantity) {
+        if (this.stock - quantity < 0) {
+            throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
+        }
+        this.stock -= quantity;
     }
 }

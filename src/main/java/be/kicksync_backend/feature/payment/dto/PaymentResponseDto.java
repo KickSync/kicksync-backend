@@ -7,7 +7,6 @@ import lombok.Getter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -27,7 +26,7 @@ public class PaymentResponseDto {
                 .paymentAmount(payment.getPaymentAmount())
                 .paymentDate(payment.getPaymentDate())
                 .paymentMethod(payment.getPaymentMethod())
-                .status(payment.getStatus())
+                .status(payment.getStatus() != null ? payment.getStatus().getValue() : null)
                 .cardName(payment.getCardName())
                 .build();
     }
