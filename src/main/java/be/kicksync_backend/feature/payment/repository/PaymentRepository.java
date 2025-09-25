@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-    Optional<Payment> findByOrderIdAndUserId(Long orderId, Long userId);
+    Optional<Payment> findByOrder_IdAndUserId(Long orderId, Long userId);
 
     List<Payment> findAllByUserId(Long userId);
 
     Optional<Payment> findByImpUid(String impUid);
 
-    Optional<Payment> findByOrderId(Long orderId);
+    Optional<Payment> findByOrder_Id(Long orderId);
 
     @Query("SELECT p.partnerId as partnerId, SUM(p.paymentAmount) as totalAmount " +
             "FROM Payment p " +

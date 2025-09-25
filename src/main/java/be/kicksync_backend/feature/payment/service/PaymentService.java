@@ -74,7 +74,7 @@ public class PaymentService {
 
     @Transactional
     public void cancelPaymentForOrder(Long orderId, String reason) throws IamportResponseException, IOException {
-        Payment payment = paymentRepository.findByOrderId(orderId)
+        Payment payment = paymentRepository.findByOrder_Id(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
         IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse =
@@ -89,7 +89,7 @@ public class PaymentService {
 
     @Transactional(readOnly = true)
     public Payment getPaymentByOrderId(Long orderId, Long userId) {
-        return paymentRepository.findByOrderIdAndUserId(orderId, userId)
+        return paymentRepository.findByOrder_IdAndUserId(orderId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
     }
 

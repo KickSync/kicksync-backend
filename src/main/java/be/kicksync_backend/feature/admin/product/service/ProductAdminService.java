@@ -2,7 +2,7 @@ package be.kicksync_backend.feature.admin.product.service;
 
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
-import be.kicksync_backend.feature.order.repository.OrderRepository;
+import be.kicksync_backend.feature.order.repository.OrderItemRepository;
 import be.kicksync_backend.feature.product.dto.ProductCreateRequestDto;
 import be.kicksync_backend.feature.product.dto.ProductResponseDto;
 import be.kicksync_backend.feature.product.dto.ProductUpdateRequestDto;
@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductAdminService {
     private final ProductRepository productRepository;
     private final ProductQueryService productQueryService;
-    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final DropEventRepository dropEventRepository;
 
     public ProductResponseDto createProduct(ProductCreateRequestDto requestDto) {
@@ -53,7 +53,7 @@ public class ProductAdminService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        if (orderRepository.existsByProductId(productId) || dropEventRepository.existsByProductId(productId)) {
+        if (orderItemRepository.existsByProductId(productId) || dropEventRepository.existsByProductId(productId)) {
             throw new CustomException(ErrorCode.PRODUCT_IN_USE);
         }
 
