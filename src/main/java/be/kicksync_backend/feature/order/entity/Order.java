@@ -2,13 +2,17 @@ package be.kicksync_backend.feature.order.entity;
 
 import be.kicksync_backend.common.entity.BaseTimeEntity;
 import be.kicksync_backend.feature.order.domain.type.OrderStatus;
-import be.kicksync_backend.feature.product.entity.Product;
+import be.kicksync_backend.common.exception.CustomException;
+import be.kicksync_backend.common.exception.ErrorCode;
+import be.kicksync_backend.feature.payment.entity.Payment;
 import be.kicksync_backend.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -35,20 +39,84 @@ public class Order extends BaseTimeEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @Embedded
+    @Column(nullable = false)
+    private Address address;
+
+    @Column(nullable = false)
+    private String receiverName;
+
+    @Column(nullable = false)
+    private String receiverPhone;
+
+    private String requestMessage;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderItem> orderItems = new ArrayList<>();
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    private Payment payment;
 
     @Builder
-    public Order(BigDecimal finalPrice, LocalDateTime orderDate, User user, Product product) {
-        this.finalPrice = finalPrice;
-        this.orderDate = orderDate;
-        this.status = OrderStatus.PREPARING;
+    public Order(User user, Address address, String receiverName, String receiverPhone, String requestMessage, List<OrderItem> orderItems) {
         this.user = user;
-        this.product = product;
+        this.address = address;
+        this.receiverName = receiverName;
+        this.receiverPhone = receiverPhone;
+        this.requestMessage = requestMessage;
+        this.orderDate = LocalDateTime.now();
+        this.status = OrderStatus.PENDING_PAYMENT;
+        orderItems.forEach(this::addOrderItem);
+        this.finalPrice = calculateTotalPrice();
+    }
+
+    public void addOrderItem(OrderItem orderItem) {
+        orderItems.add(orderItem);
+        orderItem.setOrder(this);
+    }
+
+    public BigDecimal calculateTotalPrice() {
+        return orderItems.stream()
+                .map(orderItem -> orderItem.getOrderPrice().multiply(new BigDecimal(orderItem.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public void cancel() {
+        if (status == OrderStatus.SHIPPED || status == OrderStatus.DELIVERED) {
+            throw new CustomException(ErrorCode.ORDER_CANCEL_NOT_ALLOWED_SHIPPED);
+        }
+        if (status == OrderStatus.CANCELLED) {
+            throw new CustomException(ErrorCode.ORDER_ALREADY_CANCELLED);
+        }
         this.status = OrderStatus.CANCELLED;
+        orderItems.forEach(orderItem -> orderItem.getProduct().decreaseStock(-orderItem.getQuantity()));
+    }
+
+    public void processPaymentSuccess() {
+        if (this.status != OrderStatus.PENDING_PAYMENT) {
+            throw new CustomException(ErrorCode.INVALID_ORDER_STATE);
+        }
+        this.status = OrderStatus.PREPARING;
+    }
+
+    public void failPayment() {
+        if (this.status != OrderStatus.PENDING_PAYMENT) {
+            throw new CustomException(ErrorCode.INVALID_ORDER_STATE);
+        }
+        this.status = OrderStatus.PAYMENT_FAILED;
+    }
+
+    public void ship() {
+        if (this.status != OrderStatus.PREPARING) {
+            throw new CustomException(ErrorCode.ORDER_SHIP_NOT_ALLOWED_NOT_PREPARING);
+        }
+        this.status = OrderStatus.SHIPPED;
+    }
+
+    public void deliver() {
+        if (this.status != OrderStatus.SHIPPED) {
+            throw new CustomException(ErrorCode.ORDER_DELIVER_NOT_ALLOWED_NOT_SHIPPED);
+        }
+        this.status = OrderStatus.DELIVERED;
     }
 } 

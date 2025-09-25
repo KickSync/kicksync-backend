@@ -19,6 +19,13 @@ public enum ResponseText {
     PROFILE_UPDATE_SUCCESS("프로필 수정에 성공하였습니다."),
     ORDER_HISTORY_GET_SUCCESS("주문 내역 조회에 성공하였습니다."),
 
+    // Order
+    ORDER_CREATE_SUCCESS("주문이 성공적으로 생성되었습니다. 결제를 진행해주세요."),
+    ORDER_DETAIL_FETCH_SUCCESS("주문 상세 조회 성공"),
+    ORDER_LIST_FETCH_SUCCESS("주문 목록 조회 성공"),
+    ORDER_CANCEL_SUCCESS("주문이 성공적으로 취소되었습니다."),
+    ORDER_CANCEL_FAIL("주문 취소 처리 중 오류가 발생했습니다."),
+
     // Product
     CREATE_PRODUCT_SUCCESS("상품 생성에 성공하였습니다."),
     GET_PRODUCTS_SUCCESS("상품 전체 조회에 성공하였습니다."),

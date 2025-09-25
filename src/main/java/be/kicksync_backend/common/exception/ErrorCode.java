@@ -40,7 +40,20 @@ public enum ErrorCode {
     PAYMENT_NOT_FOUND_AFTER_DUPLICATION(HttpStatus.INTERNAL_SERVER_ERROR, "중복 저장 후 결제 정보를 찾을 수 없습니다."),
 
     // Order
-    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문을 찾을 수 없습니다."),
+    MULTIPLE_PARTNERS_IN_ORDER(HttpStatus.BAD_REQUEST, "한 번의 주문에는 동일한 파트너의 상품만 담을 수 있습니다."),
+    ORDER_CANCEL_NOT_ALLOWED_SHIPPED(HttpStatus.BAD_REQUEST, "배송이 시작된 상품은 취소가 불가능합니다."),
+    ORDER_ALREADY_CANCELLED(HttpStatus.CONFLICT, "이미 취소된 주문입니다."),
+    ORDER_SHIP_NOT_ALLOWED_NOT_PREPARING(HttpStatus.BAD_REQUEST, "배송 준비 중인 상품만 배송을 시작할 수 있습니다."),
+    ORDER_DELIVER_NOT_ALLOWED_NOT_SHIPPED(HttpStatus.BAD_REQUEST, "배송 중인 상품만 배송 완료 처리할 수 있습니다."),
+    ORDER_CREATE_SUCCESS(HttpStatus.CREATED, "주문이 성공적으로 생성되었습니다. 결제를 진행해주세요."),
+    ORDER_DETAIL_FETCH_SUCCESS(HttpStatus.OK, "주문 상세 조회 성공"),
+    ORDER_LIST_FETCH_SUCCESS(HttpStatus.OK, "주문 목록 조회 성공"),
+    ORDER_CANCEL_SUCCESS(HttpStatus.OK, "주문이 성공적으로 취소되었습니다."),
+    ORDER_CANCEL_FAILED_INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "주문 취소 처리 중 오류가 발생했습니다."),
+
+    // Payment
+    INVALID_ORDER_STATE(HttpStatus.BAD_REQUEST, "현재 주문 상태에서는 해당 작업을 수행할 수 없습니다."),
     PAYMENT_ALREADY_CANCELLED(HttpStatus.CONFLICT, "이미 취소된 결제입니다."),
     PAYMENT_CANCEL_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "결제 취소에 실패했습니다."),
 

@@ -1,30 +1,30 @@
 package be.kicksync_backend.feature.order.dto;
 
-import be.kicksync_backend.feature.order.entity.Order;
-import be.kicksync_backend.feature.product.entity.Product;
-import be.kicksync_backend.feature.user.entity.User;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
 public class OrderCreateRequestDto {
-    @NotNull(message = "상품 ID는 필수입니다")
-    private Long productId;
 
-    public Order toEntity(User user, Product product) {
-        return Order.builder()
-                .finalPrice(product.getRetailPrice())
-                .orderDate(LocalDateTime.now())
-                .user(user)
-                .product(product)
-                .build();
-    }
+    @Valid
+    @NotNull(message = "주문 상품 목록은 필수입니다.")
+    private List<OrderItemRequestDto> orderItems;
+
+    @NotBlank(message = "수령인 이름은 필수입니다.")
+    private String receiverName;
+
+    @NotBlank(message = "수령인 전화번호는 필수입니다.")
+    private String receiverPhone;
+
+    @Valid
+    @NotNull(message = "주소는 필수입니다.")
+    private AddressDto address;
+
+    private String requestMessage;
 }
