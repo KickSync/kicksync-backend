@@ -36,6 +36,9 @@ public class Product extends BaseTimeEntity {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal retailPrice;
 
+    @Column(name = "partner_id")
+    private Long partnerId;
+
     @OneToMany(mappedBy = "product")
     private List<DropEvent> dropEvents = new ArrayList<>();
 

@@ -1,0 +1,77 @@
+package be.kicksync_backend.feature.payment.entity;
+
+import be.kicksync_backend.common.entity.BaseTimeEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "payments")
+public class Payment extends BaseTimeEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Long partnerId;
+
+    @Column(nullable = false)
+    private Long userId;
+
+    @Column(nullable = false)
+    private Long orderId;
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal paymentAmount;
+
+    @Column(nullable = false)
+    private LocalDateTime paymentDate;
+
+    private String impUid;
+    private String paymentMethod;
+    private String merchantUid;
+    private String pgProvider;
+    private String pgType;
+    private String pgTid;
+    private String status;
+    private String cardName;
+    private String cardNumber;
+    private String cancelReason;
+    private LocalDateTime cancelledAt;
+
+
+    @Builder
+    public Payment(Long id, Long partnerId, Long userId, Long orderId, BigDecimal paymentAmount, LocalDateTime paymentDate, String impUid, String paymentMethod, String merchantUid, String pgProvider, String pgType, String pgTid, String status, String cardName, String cardNumber) {
+        this.id = id;
+        this.partnerId = partnerId;
+        this.userId = userId;
+        this.orderId = orderId;
+        this.paymentAmount = paymentAmount;
+        this.paymentDate = paymentDate;
+        this.impUid = impUid;
+        this.paymentMethod = paymentMethod;
+        this.merchantUid = merchantUid;
+        this.pgProvider = pgProvider;
+        this.pgType = pgType;
+        this.pgTid = pgTid;
+        this.status = status;
+        this.cardName = cardName;
+        this.cardNumber = cardNumber;
+    }
+
+    public void changeStatus(String status) {
+        this.status = status;
+    }
+
+    public void updateOnCancel(String reason) {
+        this.status = "cancelled";
+        this.cancelReason = reason;
+        this.cancelledAt = LocalDateTime.now();
+    }
+}
