@@ -2,6 +2,7 @@ package be.kicksync_backend.feature.payment.entity;
 
 import be.kicksync_backend.common.entity.BaseTimeEntity;
 import be.kicksync_backend.feature.order.entity.Order;
+import be.kicksync_backend.feature.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,8 +24,9 @@ public class Payment extends BaseTimeEntity {
     @Column(nullable = false)
     private Long partnerId;
 
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false, unique = true)
@@ -74,13 +76,13 @@ public class Payment extends BaseTimeEntity {
     private LocalDateTime approvedAt;
 
     @Builder
-    public Payment(Long id, Long partnerId, Long userId, Order order, BigDecimal paymentAmount,
+    public Payment(Long id, Long partnerId, User user, Order order, BigDecimal paymentAmount,
                    LocalDateTime paymentDate, String impUid, String paymentMethod, String merchantUid,
                    String pgProvider, String pgType, String pgTid, PaymentStatus status,
                    String cardName, String cardNumber, LocalDateTime requestedAt, LocalDateTime approvedAt) {
         this.id = id;
         this.partnerId = partnerId;
-        this.userId = userId;
+        this.user = user;
         this.order = order;
         this.paymentAmount = paymentAmount;
         this.paymentDate = paymentDate;

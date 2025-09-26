@@ -1,6 +1,7 @@
 package be.kicksync_backend.feature.settlement.entity;
 
 import be.kicksync_backend.common.entity.BaseTimeEntity;
+import be.kicksync_backend.feature.order.entity.Order;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,6 +19,10 @@ public class Settlement extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
     @Column(name = "partner_id", nullable = false)
     private Long partnerId;

@@ -46,6 +46,7 @@ public enum ErrorCode {
     ORDER_ALREADY_CANCELLED(HttpStatus.CONFLICT, "이미 취소된 주문입니다."),
     ORDER_SHIP_NOT_ALLOWED_NOT_PREPARING(HttpStatus.BAD_REQUEST, "배송 준비 중인 상품만 배송을 시작할 수 있습니다."),
     ORDER_DELIVER_NOT_ALLOWED_NOT_SHIPPED(HttpStatus.BAD_REQUEST, "배송 중인 상품만 배송 완료 처리할 수 있습니다."),
+    ORDER_SETTLE_NOT_ALLOWED_NOT_DELIVERED(HttpStatus.BAD_REQUEST, "배송 완료된 상품만 정산 처리할 수 있습니다."),
     ORDER_CREATE_SUCCESS(HttpStatus.CREATED, "주문이 성공적으로 생성되었습니다. 결제를 진행해주세요."),
     ORDER_DETAIL_FETCH_SUCCESS(HttpStatus.OK, "주문 상세 조회 성공"),
     ORDER_LIST_FETCH_SUCCESS(HttpStatus.OK, "주문 목록 조회 성공"),

@@ -4,6 +4,7 @@ import be.kicksync_backend.common.entity.BaseTimeEntity;
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.feature.payment.entity.Payment;
+import be.kicksync_backend.feature.settlement.entity.Settlement;
 import be.kicksync_backend.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -55,6 +56,9 @@ public class Order extends BaseTimeEntity {
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Payment payment;
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    private Settlement settlement;
 
     @Builder
     public Order(User user, Address address, String receiverName, String receiverPhone, String requestMessage, List<OrderItem> orderItems) {
@@ -117,5 +121,12 @@ public class Order extends BaseTimeEntity {
             throw new CustomException(ErrorCode.ORDER_DELIVER_NOT_ALLOWED_NOT_SHIPPED);
         }
         this.status = OrderStatus.DELIVERED;
+    }
+
+    public void settle() {
+        if (this.status != OrderStatus.DELIVERED) {
+            throw new CustomException(ErrorCode.ORDER_SETTLE_NOT_ALLOWED_NOT_DELIVERED);
+        }
+        this.status = OrderStatus.SETTLED;
     }
 } 

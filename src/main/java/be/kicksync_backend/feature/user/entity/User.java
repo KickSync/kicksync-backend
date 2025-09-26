@@ -4,6 +4,7 @@ import be.kicksync_backend.common.entity.BaseTimeEntity;
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.feature.order.entity.Order;
+import be.kicksync_backend.feature.payment.entity.Payment;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,6 +36,9 @@ public class User extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
     private List<Order> orders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Payment> payments = new ArrayList<>();
 
     public User(String username, String password) {
         this.username = username;
