@@ -12,7 +12,8 @@ public enum OrderStatus {
     SHIPPED("배송중"),
     DELIVERED("배송 완료"),
     CANCELLED("주문 취소"),
-    PAYMENT_FAILED("결제 실패");
+    PAYMENT_FAILED("결제 실패"),
+    SETTLED("정산 완료");
 
     private final String description;
 } 

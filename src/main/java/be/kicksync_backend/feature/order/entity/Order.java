@@ -51,14 +51,12 @@ public class Order extends BaseTimeEntity {
 
     private String requestMessage;
 
+    @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Payment payment;
-
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
-    private Settlement settlement;
 
     @Builder
     public Order(User user, Address address, String receiverName, String receiverPhone, String requestMessage, List<OrderItem> orderItems) {

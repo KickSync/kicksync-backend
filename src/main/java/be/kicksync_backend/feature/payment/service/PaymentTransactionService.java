@@ -39,7 +39,7 @@ public class PaymentTransactionService {
 
         Payment payment = Payment.builder()
                 .partnerId(order.getOrderItems().get(0).getProduct().getPartnerId())
-                .userId(order.getUser().getId())
+                .user(order.getUser())
                 .order(order)
                 .paymentAmount(paymentInfo.getAmount())
                 .paymentDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(paymentInfo.getPaidAt().getTime()), ZoneId.systemDefault()))

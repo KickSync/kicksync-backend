@@ -45,9 +45,11 @@ public class Product extends BaseTimeEntity {
     @Column(name = "partner_id", nullable = false)
     private Long partnerId;
 
+    @Builder.Default
     @OneToMany(mappedBy = "product")
     private List<DropEvent> dropEvents = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "product")
     private List<OrderItem> orderItems = new ArrayList<>();
 
