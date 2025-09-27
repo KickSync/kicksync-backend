@@ -2,6 +2,10 @@ spring:
   application:
     name: kicksync_backend
 
+  batch:
+    jdbc:
+      initialize-schema: always
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,7 +17,8 @@ spring:
     defer-datasource-initialization: true
   sql:
     init:
-      mode: never
+      mode: always
+      schema-locations: classpath:schema-mysql.sql
   output:
     ansi:
       enabled: always
