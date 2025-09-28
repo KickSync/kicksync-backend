@@ -1,30 +1,34 @@
 package be.kicksync_backend.feature.batch;
 
+import be.kicksync_backend.feature.batch.listener.PerformanceStepExecutionListener;
 import be.kicksync_backend.feature.batch.processor.SettlementItemProcessor;
 import be.kicksync_backend.feature.payment.dto.PartnerSettlementDto;
 import be.kicksync_backend.feature.payment.entity.PaymentStatus;
-import be.kicksync_backend.feature.payment.repository.PaymentRepository;
 import be.kicksync_backend.feature.settlement.entity.Settlement;
+import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;
+import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import jakarta.persistence.EntityManagerFactory;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Configuration
@@ -32,7 +36,7 @@ import java.util.List;
 public class SettlementJobConfig {
 
     private final EntityManagerFactory entityManagerFactory;
-    private final PaymentRepository paymentRepository;
+    private final PerformanceStepExecutionListener performanceStepExecutionListener;
 
     @Bean
     public Job settlementJob(JobRepository jobRepository, Step settlementStep) {
@@ -44,50 +48,53 @@ public class SettlementJobConfig {
     @Bean
     public Step settlementStep(JobRepository jobRepository,
                                PlatformTransactionManager transactionManager,
-                               ItemReader<PartnerSettlementDto> settlementItemReader,
+                               JpaPagingItemReader<PartnerSettlementDto> settlementItemReader,
                                ItemProcessor<PartnerSettlementDto, Settlement> settlementItemProcessor,
                                ItemWriter<Settlement> settlementItemWriter) {
         return new StepBuilder("settlementStep", jobRepository)
-                .<PartnerSettlementDto, Settlement>chunk(100, transactionManager)
+                .<PartnerSettlementDto, Settlement>chunk(1000, transactionManager)
                 .reader(settlementItemReader)
                 .processor(settlementItemProcessor)
                 .writer(settlementItemWriter)
+                .listener(performanceStepExecutionListener)
                 .build();
     }
 
     @Bean
-    public ItemReader<PartnerSettlementDto> settlementItemReader() {
-        return new ItemReader<PartnerSettlementDto>() {
-            private List<PartnerSettlementDto> partnerSettlementData;
-            private int currentIndex = 0;
+    @StepScope
+    public JpaPagingItemReader<PartnerSettlementDto> settlementItemReader(
+            @Value("#{jobParameters['settlementDate']}") String settlementDateStr) {
 
-            @Override
-            public PartnerSettlementDto read() {
-                if (partnerSettlementData == null) {
-                    LocalDate settlementDate = LocalDate.now().minusDays(4);
-                    LocalDateTime startOfDay = settlementDate.atStartOfDay();
-                    LocalDateTime endOfDay = settlementDate.atTime(LocalTime.MAX);
-                    
-                    log.info("정산 대상 날짜: {} ~ {}", startOfDay, endOfDay);
-                    
-                    partnerSettlementData = paymentRepository.findPartnerTotalsByStatusAndPaymentDateBetween(
-                            PaymentStatus.PAID, startOfDay, endOfDay);
-                    
-                    log.info("집계된 파트너 정산 데이터: {}건", partnerSettlementData.size());
-                    currentIndex = 0;
-                }
+        LocalDate settlementDate = LocalDate.parse(settlementDateStr);
+        LocalDateTime startOfDay = settlementDate.atStartOfDay();
+        LocalDateTime endOfDay = settlementDate.atTime(LocalTime.MAX);
 
-                if (currentIndex < partnerSettlementData.size()) {
-                    return partnerSettlementData.get(currentIndex++);
-                }
-                return null;
-            }
-        };
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("status", PaymentStatus.PAID);
+        parameters.put("startDate", startOfDay);
+        parameters.put("endDate", endOfDay);
+
+        String queryString = String.format("SELECT NEW %s(p.partnerId, SUM(p.paymentAmount)) " +
+                        "FROM Payment p " +
+                        "WHERE p.status = :status AND p.paymentDate BETWEEN :startDate AND :endDate AND p.partnerId IS NOT NULL " +
+                        "GROUP BY p.partnerId " +
+                        "ORDER BY p.partnerId",
+                PartnerSettlementDto.class.getName());
+
+        return new JpaPagingItemReaderBuilder<PartnerSettlementDto>()
+                .name("settlementItemReader")
+                .entityManagerFactory(entityManagerFactory)
+                .queryString(queryString)
+                .parameterValues(parameters)
+                .pageSize(1000) // 청크 사이즈와 동일하게 설정하여 메모리 최적화
+                .build();
     }
 
     @Bean
-    public ItemProcessor<PartnerSettlementDto, Settlement> settlementItemProcessor() {
-        return new SettlementItemProcessor();
+    @StepScope
+    public ItemProcessor<PartnerSettlementDto, Settlement> settlementItemProcessor(
+            @Value("#{jobParameters['settlementDate']}") String settlementDateStr) {
+        return new SettlementItemProcessor(LocalDate.parse(settlementDateStr));
     }
 
     @Bean

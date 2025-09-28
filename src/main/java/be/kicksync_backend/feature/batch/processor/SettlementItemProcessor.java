@@ -11,6 +11,12 @@ import java.time.LocalDate;
 @Slf4j
 public class SettlementItemProcessor implements ItemProcessor<PartnerSettlementDto, Settlement> {
 
+    private final LocalDate settlementDate;
+
+    public SettlementItemProcessor(LocalDate settlementDate) {
+        this.settlementDate = settlementDate;
+    }
+
     @Override
     public Settlement process(PartnerSettlementDto partnerSettlementDto) throws Exception {
         if (partnerSettlementDto == null || partnerSettlementDto.getPartnerId() == null) {
@@ -25,7 +31,7 @@ public class SettlementItemProcessor implements ItemProcessor<PartnerSettlementD
         return Settlement.builder()
                 .partnerId(partnerSettlementDto.getPartnerId())
                 .totalAmount(partnerSettlementDto.getTotalAmount())
-                .settlementDate(LocalDate.now().minusDays(4))
+                .settlementDate(this.settlementDate)
                 .status(SettlementStatus.COMPLETED)
                 .build();
     }
