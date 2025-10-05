@@ -11,6 +11,7 @@ import be.kicksync_backend.feature.product.repository.DropEventRepository;
 import be.kicksync_backend.feature.product.repository.ProductRepository;
 import be.kicksync_backend.feature.product.service.ProductQueryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class ProductAdminService {
     private final OrderItemRepository orderItemRepository;
     private final DropEventRepository dropEventRepository;
 
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponseDto createProduct(ProductCreateRequestDto requestDto) {
         Product product = requestDto.toEntity();
         Product savedProduct = productRepository.save(product);
@@ -41,6 +43,7 @@ public class ProductAdminService {
         return productQueryService.getProduct(productId);
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
@@ -49,6 +52,7 @@ public class ProductAdminService {
         return new ProductResponseDto(product);
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public void deleteProduct(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));

@@ -1,6 +1,13 @@
 spring:
+  profiles:
+    active: local
   application:
     name: kicksync_backend
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 10m
 
   batch:
     jdbc:
@@ -37,6 +44,12 @@ spring:
       idle-timeout: 600000
       max-lifetime: 1800000
       leak-detection-threshold: 120000
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
 
 jwt:
   secret:
