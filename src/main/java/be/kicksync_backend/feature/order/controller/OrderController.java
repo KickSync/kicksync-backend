@@ -7,6 +7,7 @@ import be.kicksync_backend.feature.order.dto.OrderCancelRequestDto;
 import be.kicksync_backend.feature.order.dto.OrderCreateRequestDto;
 import be.kicksync_backend.feature.order.dto.OrderResponseDto;
 import be.kicksync_backend.feature.order.entity.Order;
+import be.kicksync_backend.feature.order.service.OrderFacade;
 import be.kicksync_backend.feature.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderFacade orderFacade;
 
     /**
      * 주문 생성 API
@@ -38,7 +40,7 @@ public class OrderController {
     public ResponseEntity<ApiResponse<OrderResponseDto>> createOrder(
             @Valid @RequestBody OrderCreateRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        OrderResponseDto responseDto = orderService.createOrder(requestDto, userDetails.getUser().getId());
+        OrderResponseDto responseDto = orderFacade.createOrderWithLock(requestDto, userDetails.getUser().getId());
         ApiResponse<OrderResponseDto> apiResponse = ApiResponse.<OrderResponseDto>builder()
                 .msg(ResponseText.ORDER_CREATE_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.CREATED.value()))

@@ -36,13 +36,36 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final PaymentService paymentService;
 
+    @Transactional(readOnly = true)
+    public void preValidateOrder(OrderCreateRequestDto requestDto, Long userId) {
+        if (requestDto.getOrderItems() == null || requestDto.getOrderItems().isEmpty()) {
+            throw new CustomException(ErrorCode.EMPTY_ORDER_ITEMS);
+        }
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<Long> partnerIds = requestDto.getOrderItems().stream()
+                .map(itemDto -> {
+                    Product product = productRepository.findById(itemDto.getProductId())
+                            .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+                    return product.getPartnerId();
+                })
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (partnerIds.size() > 1) {
+            throw new CustomException(ErrorCode.MULTIPLE_PARTNERS_IN_ORDER);
+        }
+    }
+
     public OrderResponseDto createOrder(OrderCreateRequestDto requestDto, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         List<OrderItem> orderItems = requestDto.getOrderItems().stream()
                 .map(itemDto -> {
-                    Product product = productRepository.findByIdWithPessimisticLock(itemDto.getProductId())
+                    Product product = productRepository.findById(itemDto.getProductId())
                             .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
                     product.decreaseStock(itemDto.getQuantity());
@@ -53,10 +76,6 @@ public class OrderService {
                             .orderPrice(product.getRetailPrice())
                             .build();
                 }).collect(Collectors.toList());
-
-        if (orderItems.stream().map(orderItem -> orderItem.getProduct().getPartnerId()).distinct().count() > 1) {
-            throw new CustomException(ErrorCode.MULTIPLE_PARTNERS_IN_ORDER);
-        }
 
         Order order = Order.builder()
                 .user(user)
@@ -84,7 +103,7 @@ public class OrderService {
 
         order.processPaymentSuccess();
 
-        log.info("주문 결제 완료 및 상품 준비 시작: orderId={}", orderId);
+        log.info("주문 결제 완료: orderId={}", orderId);
     }
 
     @Transactional(readOnly = true)
