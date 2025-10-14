@@ -46,7 +46,7 @@ public class OrderFacade {
             Thread.currentThread().interrupt();
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         } finally {
-            if (isLocked && multiLock.isHeldByCurrentThread()) {
+            if (isLocked) {
                 multiLock.unlock();
                 log.info("다중 락 해제: user ID={}", userId);
             }

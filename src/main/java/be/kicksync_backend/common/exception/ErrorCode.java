@@ -27,7 +27,11 @@ public enum ErrorCode {
 
     // Product
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
-    PRODUCT_IN_USE(HttpStatus.CONFLICT, "해당 상품은 주문 또는 드롭 이벤트에서 사용 중이므로 삭제할 수 없습니다."),
+    PRODUCT_IN_USE(HttpStatus.CONFLICT, "다른 주문 또는 이벤트에서 사용 중인 상품은 삭제할 수 없습니다."),
+    LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "주문 처리 중 충돌이 발생했습니다. 잠시 후 다시 시도해주세요."),
+
+    // 5xx
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버에 오류가 발생했습니다."),
     PRODUCT_UPDATE_CONFLICT(HttpStatus.CONFLICT, "다른 관리자에 의해 정보가 수정되었습니다. 다시 시도해주세요."),
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "재고가 부족합니다."),
 
@@ -63,8 +67,8 @@ public enum ErrorCode {
     INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "잘못된 형식의 파일입니다."),
 
     // Common
-    DATABASE_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "데이터베이스 업데이트에 실패했습니다. 관리자에게 문의하세요.");
-
+    DATABASE_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "데이터베이스 업데이트에 실패했습니다, 관리자에게 문의하세요."),
+    EMPTY_ORDER_ITEMS(HttpStatus.MULTI_STATUS, "주문 항목이 비어 있습니다.");
     private final HttpStatus status;
     private final String message;
 }

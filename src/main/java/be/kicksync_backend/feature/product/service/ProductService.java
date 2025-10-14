@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductService {
     private final ProductQueryService productQueryService;
 
-    @Cacheable(value = "products", key = "'allProducts-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+    @Cacheable(value = "products", key = "'allProducts-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
     public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
         return productQueryService.getAllProducts(pageable);
     }
