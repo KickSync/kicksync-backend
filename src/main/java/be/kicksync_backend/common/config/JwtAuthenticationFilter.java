@@ -1,5 +1,6 @@
 package be.kicksync_backend.common.config;
 
+import be.kicksync_backend.common.service.RedisTokenService;
 import be.kicksync_backend.common.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;
@@ -30,6 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
+    private final RedisTokenService redisTokenService;
 
     @Override
     protected void doFilterInternal(
@@ -46,6 +48,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         jwt = authHeader.substring(7);
+
+        if (redisTokenService.isAccessTokenBlacklisted(jwt)) {
+            setErrorResponse(request, response, new JwtException("Token has been revoked"));
+            return;
+        }
+
         try {
             username = jwtUtil.getUsernameFromToken(jwt);
         } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {

@@ -4,14 +4,17 @@ import be.kicksync_backend.common.dto.JwtResponseDto;
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.common.security.UserDetailsImpl;
+import be.kicksync_backend.common.service.RateLimitService;
+import be.kicksync_backend.common.service.RedisTokenService;
 import be.kicksync_backend.common.util.JwtUtil;
 import be.kicksync_backend.feature.token.RefreshTokenService;
 import be.kicksync_backend.feature.user.dto.UserResponseDto;
 import be.kicksync_backend.feature.user.dto.UserSignupRequestDto;
 import be.kicksync_backend.feature.user.entity.User;
 import be.kicksync_backend.feature.user.repository.UserRepository;
-import be.kicksync_backend.feature.token.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,7 +31,8 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RateLimitService rateLimitService;
+    private final RedisTokenService redisTokenService;
 
     public UserResponseDto signup(UserSignupRequestDto requestDto) {
 
@@ -44,33 +48,46 @@ public class UserService implements UserDetailsService {
     }
 
     public JwtResponseDto login(UserLoginRequestDto requestDto) {
+        rateLimitService.checkRateLimit(requestDto.getUsername());
+
         User user = userRepository.findByUsername(requestDto.getUsername()).orElse(null);
         if (user == null || !passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
         }
 
+        rateLimitService.resetRateLimit(requestDto.getUsername());
+
         UserDetailsImpl userDetails = UserDetailsImpl.build(user);
         String accessToken = jwtUtil.generateAccessToken(userDetails);
-        refreshTokenRepository.deleteByUser(user);
-        String refreshToken = refreshTokenService.createRefreshToken(user).getToken();
+
+        refreshTokenService.deleteRefreshToken(user.getId());
+        String refreshToken = refreshTokenService.createRefreshToken(user);
 
         return new JwtResponseDto(accessToken, refreshToken);
     }
 
-    public void logout(UserDetailsImpl userDetails) {
+    public void logout(UserDetailsImpl userDetails, String accessToken) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        refreshTokenRepository.deleteByUser(user);
+
+        refreshTokenService.deleteRefreshToken(user.getId());
+
+        Long remainingExpiration = jwtUtil.getRemainingExpirationMs(accessToken);
+        redisTokenService.blacklistAccessToken(accessToken, remainingExpiration);
     }
 
+    @CacheEvict(value = "users", key = "#userDetails.username")
     public void deleteAccount(UserDetailsImpl userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
+
+        refreshTokenService.deleteRefreshToken(user.getId());
+
         userRepository.delete(user);
     }
 
     @Override
+    @Cacheable(value = "users", key = "#username")
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
                 .map(UserDetailsImpl::build)

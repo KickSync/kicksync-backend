@@ -66,8 +66,13 @@ public class UserController {
      * @return 성공 메시지
      */
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        userService.logout(userDetails);
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestHeader("Authorization") String authHeader) {
+
+        String accessToken = authHeader.substring(7);
+
+        userService.logout(userDetails, accessToken);
         ApiResponse<Void> response = ApiResponse.<Void>builder()
                 .msg(ResponseText.LOGOUT_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
