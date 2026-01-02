@@ -95,5 +95,6 @@
 <br>
 
 ## ERD
-
+<img width="2300" height="1272" alt="image" src="https://github.com/user-attachments/assets/dea6bddd-e37b-4663-b63b-7212dc0a4e02" />
+https://www.erdcloud.com/d/B5xBxsPqkP4uwSPt4
 <br>
