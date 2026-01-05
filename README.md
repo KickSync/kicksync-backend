@@ -1,3 +1,4 @@
+<img width="524" height="524" alt="image" src="https://github.com/user-attachments/assets/ac0d544a-8207-4ef4-a32b-e814aabddd45" />
 
 # KickSync - 대용량 트래픽 처리를 위한 한정판 신발 거래 플랫폼
 
@@ -11,7 +12,7 @@
 단순한 기능 구현을 넘어, **대규모 데이터 처리 시 발생하는 성능 병목을 단계적으로 해결**하고, **분산 환경에서의 데이터 정합성**을 보장하는 견고한 아키텍처를 구축하는 데 주력했습니다. 이를 통해 시스템이 성장함에 따라 발생하는 기술적 부채를 해결하고 확장성 있는 구조로 고도화하는 과정을 경험했습니다.
 
 ### 핵심 목표
-- **대용량 배치 최적화:** 100만 건 이상의 정산 데이터 처리 속도 **99% 개선 (136배 단축)**
+- **대용량 배치 최적화:** 100만 건 이상의 정산 데이터 처리 속도 대폭 개선 (136배 단축)**
 - **데이터 무결성:** 인기 상품 주문 폭주 상황에서 **재고 정합성 100% 보장**
 - **고가용성 & 확장성:** 트래픽 증가와 서버 증설에 유연한 아키텍처 설계
 
@@ -20,18 +21,20 @@
 ## 기술 스택
 
 | Category | Technology |
-| --- | --- |
-| **Language** | Java 17 |
-| **Framework** | Spring Boot 3.x, Spring Batch, Spring Security |
-| **Database** | MySQL 8.0, Redis (Cache, Lock, Pub/Sub) |
-| **ORM** | JPA (Hibernate), QueryDSL |
-| **DevOps** | AWS (EC2, RDS), Docker, GitHub Actions |
-| **Testing** | JUnit5, nGrinder, Scouter |
+| :--- | :--- |
+| **Language** | <img src="https://img.shields.io/badge/Java_17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white"> |
+| **Framework** | <img src="https://img.shields.io/badge/Spring_Boot_3.x-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/Spring_Batch-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white"> |
+| **Database** | <img src="https://img.shields.io/badge/MySQL_8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white"> <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white"> |
+| **ORM** | <img src="https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=hibernate&logoColor=white"> <img src="https://img.shields.io/badge/QueryDSL-007ACC?style=for-the-badge&logo=java&logoColor=white"> |
+| **Infra & Testing** | <img src="https://img.shields.io/badge/Oracle_Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white"> <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white"> <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white"> <br> <img src="https://img.shields.io/badge/JUnit5-25A162?style=for-the-badge&logo=junit5&logoColor=white"> <img src="https://img.shields.io/badge/nGrinder-FFA500?style=for-the-badge&logo=java&logoColor=white"> <img src="https://img.shields.io/badge/Scouter-00C7B7?style=for-the-badge&logo=scouter&logoColor=white"> |
 
 <br>
 
 ## 시스템 아키텍처
 <img width="1071" height="591" alt="image" src="https://github.com/user-attachments/assets/318e28a2-1d6c-498a-b7e0-7826d9182e79" />
+
+## 배치 프로세스 아키텍처
+<img width="895" height="561" alt="image" src="https://github.com/user-attachments/assets/7e991801-31e0-41a3-aa0e-928188e5eba3" />
 
 
 <br>
@@ -56,6 +59,13 @@
 
 ### Phase 2. 대용량 처리를 위한 아키텍처 재설계 (Spring Batch 도입)
 데이터가 100만 건 이상으로 증가함에 따라, 기존 방식의 한계를 넘기 위해 **Spring Batch**로 마이그레이션하고 심화된 성능 병목을 해결했습니다.
+
+
+### 파티셔닝 구조도
+<img width="2432" height="1760" alt="image" src="https://github.com/user-attachments/assets/0d74dd20-e17a-4dcd-ab02-d39a4c51d9d6" />
+
+
+<br>
 
 - **Challenge: 마이그레이션 후에도 해결되지 않은 병목 (I/O vs CPU)**
     - Spring Batch 도입 후에도 100만 건 처리에 **2시간 23분**이 소요되었으며, 메모리 이슈가 발생했습니다.
