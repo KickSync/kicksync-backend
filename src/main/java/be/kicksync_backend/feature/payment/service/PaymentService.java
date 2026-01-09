@@ -8,6 +8,7 @@ import be.kicksync_backend.feature.order.repository.OrderRepository;
 import be.kicksync_backend.feature.payment.util.PaymentClient;
 import be.kicksync_backend.feature.payment.dto.PaymentRequestDto;
 import be.kicksync_backend.feature.payment.entity.Payment;
+import be.kicksync_backend.feature.payment.entity.PaymentStatus;
 import be.kicksync_backend.feature.payment.repository.PaymentRepository;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.response.IamportResponse;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -31,7 +33,13 @@ public class PaymentService {
     private final PaymentTransactionService paymentTransactionService;
 
     public Payment verifyPayment(PaymentRequestDto requestDto, Long userId) throws IamportResponseException, IOException {
-        if (paymentRepository.findByImpUid(requestDto.getImpUid()).isPresent()) {
+        Optional<Payment> existingPayment = paymentRepository.findByImpUid(requestDto.getImpUid());
+        if (existingPayment.isPresent()) {
+            Payment payment = existingPayment.get();
+            if (payment.getStatus() == PaymentStatus.PAID) {
+                log.info("이미 성공적으로 처리된 결제입니다. impUid={}", requestDto.getImpUid());
+                return payment;
+            }
             throw new CustomException(ErrorCode.PAYMENT_ALREADY_CANCELLED);
         }
 

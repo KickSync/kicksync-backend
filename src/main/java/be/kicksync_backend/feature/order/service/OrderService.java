@@ -65,7 +65,7 @@ public class OrderService {
 
         List<OrderItem> orderItems = requestDto.getOrderItems().stream()
                 .map(itemDto -> {
-                    Product product = productRepository.findById(itemDto.getProductId())
+                    Product product = productRepository.findByIdWithPessimisticLock(itemDto.getProductId())
                             .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
                     product.decreaseStock(itemDto.getQuantity());
