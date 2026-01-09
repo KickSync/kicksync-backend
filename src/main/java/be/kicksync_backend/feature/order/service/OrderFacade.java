@@ -25,17 +25,24 @@ public class OrderFacade {
     public OrderResponseDto createOrderWithLock(OrderCreateRequestDto requestDto, Long userId) {
         orderService.preValidateOrder(requestDto, userId);
 
-        List<RLock> locks = requestDto.getOrderItems().stream()
-                .map(item -> redissonClient.getLock("lock:product:" + item.getProductId()))
+        List<Long> productIds = requestDto.getOrderItems().stream()
+                .map(OrderItemRequestDto::getProductId)
+                .distinct()
+                .sorted()
                 .toList();
+
+        List<RLock> locks = productIds.stream()
+                .map(id -> redissonClient.getLock("lock:product:" + id))
+                .toList();
+
         RLock multiLock = redissonClient.getMultiLock(locks.toArray(new RLock[0]));
 
         boolean isLocked = false;
         try {
-            isLocked = multiLock.tryLock(10, TimeUnit.SECONDS);
+            // waitTime: 10s, leaseTime: 5s (트랜잭션이 5초 이상 걸리면 락 자동 해제)
+            isLocked = multiLock.tryLock(10, 5, TimeUnit.SECONDS);
             if (!isLocked) {
-                log.warn("다중 락 획득 실패: user ID={}, items={}", userId, requestDto.getOrderItems().stream()
-                        .map(OrderItemRequestDto::getProductId).collect(Collectors.toList()));
+                log.warn("다중 락 획득 실패: user ID={}, items={}", userId, productIds);
                 throw new CustomException(ErrorCode.LOCK_ACQUISITION_FAILED);
             }
 
@@ -47,8 +54,12 @@ public class OrderFacade {
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         } finally {
             if (isLocked) {
-                multiLock.unlock();
-                log.info("다중 락 해제: user ID={}", userId);
+                try {
+                    multiLock.unlock();
+                    log.info("다중 락 해제: user ID={}", userId);
+                } catch (IllegalMonitorStateException e) {
+                    log.warn("이미 해제된 락입니다: user ID={}", userId);
+                }
             }
         }
     }

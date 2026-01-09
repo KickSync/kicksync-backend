@@ -52,7 +52,7 @@ public class OrderService {
                     return product.getPartnerId();
                 })
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
 
         if (partnerIds.size() > 1) {
             throw new CustomException(ErrorCode.MULTIPLE_PARTNERS_IN_ORDER);
@@ -75,7 +75,7 @@ public class OrderService {
                             .quantity(itemDto.getQuantity())
                             .orderPrice(product.getRetailPrice())
                             .build();
-                }).collect(Collectors.toList());
+                }).toList();
 
         Order order = Order.builder()
                 .user(user)
