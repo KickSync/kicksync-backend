@@ -158,22 +158,24 @@ public class SettlementJobConfig {
         }
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("status", PaymentStatus.PAID);
+        parameters.put("paidStatus", PaymentStatus.PAID);
+        parameters.put("cancelledStatus", PaymentStatus.CANCELLED);
         parameters.put("startDate", startDate);
         parameters.put("endDate", endDate);
         parameters.put("minId", minId);
         parameters.put("maxId", maxId);
 
         StringBuilder queryStringBuilder = new StringBuilder();
-        queryStringBuilder.append(String.format("SELECT NEW %s(p.partnerId, SUM(p.paymentAmount)) ", PartnerSettlementDto.class.getName()));
+        queryStringBuilder.append(String.format("SELECT NEW %s(p.partnerId, SUM(CASE WHEN p.status = :paidStatus THEN p.paymentAmount WHEN p.status = :cancelledStatus THEN -p.paymentAmount ELSE 0 END)) ", PartnerSettlementDto.class.getName()));
         queryStringBuilder.append("FROM Payment p ");
-        queryStringBuilder.append("WHERE p.status = :status AND p.paymentDate BETWEEN :startDate AND :endDate AND p.partnerId IS NOT NULL ");
+        queryStringBuilder.append("WHERE ((p.status = :paidStatus AND p.paymentDate BETWEEN :startDate AND :endDate) OR (p.status = :cancelledStatus AND p.cancelledAt BETWEEN :startDate AND :endDate)) ");
+        queryStringBuilder.append("AND p.partnerId IS NOT NULL ");
         queryStringBuilder.append("AND p.partnerId BETWEEN :minId AND :maxId ");
 
         if (partnerIdsStr != null && !partnerIdsStr.isEmpty()) {
             List<Long> partnerIds = Arrays.stream(partnerIdsStr.split(","))
                     .map(Long::parseLong)
-                    .collect(Collectors.toList());
+                    .toList();
             queryStringBuilder.append("AND p.partnerId IN :partnerIds ");
             parameters.put("partnerIds", partnerIds);
         }
