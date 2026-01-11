@@ -105,7 +105,7 @@ public class OrderController {
             @PathVariable Long orderId,
             @RequestBody(required = false) OrderCancelRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        orderService.cancelOrder(orderId, requestDto, userDetails.getUser().getId());
+        orderFacade.cancelOrder(orderId, requestDto, userDetails.getUser().getId());
         ApiResponse<Void> apiResponse = ApiResponse.<Void>builder()
                 .msg(ResponseText.ORDER_CANCEL_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))

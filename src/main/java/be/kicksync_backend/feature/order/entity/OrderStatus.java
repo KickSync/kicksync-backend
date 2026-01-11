@@ -11,6 +11,7 @@ public enum OrderStatus {
     PREPARING("상품 준비중"),
     SHIPPED("배송중"),
     DELIVERED("배송 완료"),
+    CANCELLING("취소 처리중"),
     CANCELLED("주문 취소"),
     PAYMENT_FAILED("결제 실패"),
     SETTLED("정산 완료");

@@ -1,5 +1,6 @@
 package be.kicksync_backend.feature.payment.service;
 
+import be.kicksync_backend.feature.order.repository.OrderRepository;
 import be.kicksync_backend.feature.order.entity.Order;
 import be.kicksync_backend.feature.payment.entity.PaymentStatus;
 import be.kicksync_backend.feature.payment.entity.Payment;
@@ -23,6 +24,7 @@ import java.time.ZoneId;
 public class PaymentTransactionService {
 
     private final PaymentRepository paymentRepository;
+    private final OrderRepository orderRepository;
 
     @Transactional
     public Payment savePaymentRecord(com.siot.IamportRestClient.response.Payment paymentInfo, Order order) {
@@ -61,6 +63,21 @@ public class PaymentTransactionService {
             return paymentRepository.findByImpUid(paymentInfo.getImpUid())
                     .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND_AFTER_DUPLICATION));
         }
+    }
+
+    @Transactional
+    public Payment completePaymentVerification(com.siot.IamportRestClient.response.Payment paymentInfo, Order order) {
+        Payment payment = savePaymentRecord(paymentInfo, order);
+        order.processPaymentSuccess();
+        orderRepository.save(order);
+        return payment;
+    }
+
+    @Transactional
+    public void finalizePaymentCancellation(Long paymentId, String reason) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
+        payment.updateOnCancel(reason);
     }
 
     private static String getLastFourDigits(com.siot.IamportRestClient.response.Payment paymentInfo) {

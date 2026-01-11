@@ -66,4 +66,8 @@ public class Product extends BaseTimeEntity {
         }
         this.stock -= quantity;
     }
+
+    public void increaseStock(Integer quantity) {
+        this.stock += quantity;
+    }
 }

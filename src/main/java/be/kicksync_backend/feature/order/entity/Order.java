@@ -90,7 +90,24 @@ public class Order extends BaseTimeEntity {
             throw new CustomException(ErrorCode.ORDER_ALREADY_CANCELLED);
         }
         this.status = OrderStatus.CANCELLED;
-        orderItems.forEach(orderItem -> orderItem.getProduct().decreaseStock(-orderItem.getQuantity()));
+        orderItems.forEach(orderItem -> orderItem.getProduct().increaseStock(orderItem.getQuantity()));
+    }
+
+    public void markAsCancelling() {
+        if (status == OrderStatus.SHIPPED || status == OrderStatus.DELIVERED) {
+            throw new CustomException(ErrorCode.ORDER_CANCEL_NOT_ALLOWED_SHIPPED);
+        }
+        if (status == OrderStatus.CANCELLED) {
+            throw new CustomException(ErrorCode.ORDER_ALREADY_CANCELLED);
+        }
+        this.status = OrderStatus.CANCELLING;
+    }
+
+    public void revertCancelling() {
+        if (this.status != OrderStatus.CANCELLING) {
+            throw new CustomException(ErrorCode.INVALID_ORDER_STATE);
+        }
+        this.status = OrderStatus.PREPARING;
     }
 
     public void processPaymentSuccess() {

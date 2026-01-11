@@ -74,17 +74,11 @@ public class PaymentService {
             throw new CustomException(ErrorCode.PAYMENT_STATUS_NOT_PAID);
         }
 
-        Payment payment = paymentTransactionService.savePaymentRecord(paymentInfo, order);
-        order.processPaymentSuccess();
-
-        return payment;
+        return paymentTransactionService.completePaymentVerification(paymentInfo, order);
     }
 
-    @Transactional
     public void cancelPaymentForOrder(Long orderId, String reason) throws IamportResponseException, IOException {
-        Payment payment = paymentRepository.findByOrder_Id(orderId)
-                .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
-
+        Payment payment = getPaymentByOrderId(orderId);
         IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse =
                 paymentClient.cancelPaymentByImpUid(payment.getImpUid(), reason);
 
@@ -92,7 +86,12 @@ public class PaymentService {
             throw new CustomException(ErrorCode.PAYMENT_CANCEL_FAILED);
         }
 
-        payment.updateOnCancel(reason);
+        paymentTransactionService.finalizePaymentCancellation(payment.getId(), reason);
+    }
+
+    private Payment getPaymentByOrderId(Long orderId) {
+        return paymentRepository.findByOrder_Id(orderId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
