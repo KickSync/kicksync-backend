@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,10 +61,13 @@ public class OrderService {
 
         List<OrderItem> orderItems = requestDto.getOrderItems().stream()
                 .map(itemDto -> {
-                    Product product = productRepository.findById(itemDto.getProductId())
+                    Product product = productRepository.findByIdForce(itemDto.getProductId())
                             .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
                     product.decreaseStock(itemDto.getQuantity());
+
+                    log.info("[CONCURRENCY_TEST] 재고 차감: User={}, ProductId={}, 남은 재고={}, 요청 수량={}",
+                            userId, product.getId(), product.getStock(), itemDto.getQuantity());
 
                     return OrderItem.builder()
                             .product(product)
@@ -71,8 +76,15 @@ public class OrderService {
                             .build();
                 }).toList();
 
+        BigDecimal totalAmount = orderItems.stream()
+                .map(item -> item.getOrderPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         Order order = Order.builder()
                 .user(user)
+                .finalPrice(totalAmount)
+                .orderDate(LocalDate.now().atStartOfDay())
+                .status(OrderStatus.PENDING_PAYMENT)
                 .receiverName(requestDto.getReceiverName())
                 .receiverPhone(requestDto.getReceiverPhone())
                 .address(new be.kicksync_backend.feature.order.entity.Address(
@@ -82,6 +94,10 @@ public class OrderService {
                 .requestMessage(requestDto.getRequestMessage())
                 .orderItems(orderItems)
                 .build();
+
+        for (OrderItem item : orderItems) {
+            item.setOrder(order);
+        }
 
         Order savedOrder = orderRepository.save(order);
 
@@ -130,8 +146,14 @@ public class OrderService {
     public void finalizeCancelOrder(Long orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+
         order.cancel();
-        log.info("주문 취소 완료 (DB 업데이트): orderId={}, userId={}", orderId, userId);
+
+        for (OrderItem item : order.getOrderItems()) {
+            productRepository.increaseStock(item.getProduct().getId(), item.getQuantity());
+        }
+
+        log.info("주문 취소 완료 (DB 업데이트 & 재고 복구): orderId={}, userId={}", orderId, userId);
     }
 
     @Transactional(readOnly = true)

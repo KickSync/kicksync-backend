@@ -4,7 +4,6 @@ import be.kicksync_backend.common.entity.BaseTimeEntity;
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.feature.payment.entity.Payment;
-import be.kicksync_backend.feature.settlement.entity.Settlement;
 import be.kicksync_backend.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -90,7 +89,6 @@ public class Order extends BaseTimeEntity {
             throw new CustomException(ErrorCode.ORDER_ALREADY_CANCELLED);
         }
         this.status = OrderStatus.CANCELLED;
-        orderItems.forEach(orderItem -> orderItem.getProduct().increaseStock(orderItem.getQuantity()));
     }
 
     public void markAsCancelling() {
