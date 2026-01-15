@@ -82,9 +82,6 @@ public class OrderService {
 
         Order order = Order.builder()
                 .user(user)
-                .finalPrice(totalAmount)
-                .orderDate(LocalDate.now().atStartOfDay())
-                .status(OrderStatus.PENDING_PAYMENT)
                 .receiverName(requestDto.getReceiverName())
                 .receiverPhone(requestDto.getReceiverPhone())
                 .address(new be.kicksync_backend.feature.order.entity.Address(

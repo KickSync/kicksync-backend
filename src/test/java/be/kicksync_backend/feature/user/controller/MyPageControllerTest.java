@@ -2,8 +2,10 @@ package be.kicksync_backend.feature.user.controller;
 
 import be.kicksync_backend.feature.order.entity.Order;
 import be.kicksync_backend.feature.order.repository.OrderRepository;
+import be.kicksync_backend.feature.payment.repository.PaymentRepository;
 import be.kicksync_backend.feature.product.entity.Product;
 import be.kicksync_backend.feature.product.repository.ProductRepository;
+import be.kicksync_backend.feature.token.RefreshTokenRepository;
 import be.kicksync_backend.feature.user.dto.ProfileUpdateRequestDto;
 import be.kicksync_backend.feature.user.dto.UserLoginRequestDto;
 import be.kicksync_backend.feature.user.entity.User;
@@ -18,6 +20,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -25,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -36,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@TestPropertySource(properties = "spring.cache.type=none")
 class MyPageControllerTest {
 
     @Autowired
@@ -56,32 +59,52 @@ class MyPageControllerTest {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
     private User testUser;
 
     @BeforeEach
     void setUp() {
+        paymentRepository.deleteAll();
         orderRepository.deleteAll();
         productRepository.deleteAll();
+        refreshTokenRepository.deleteAll();
         userRepository.deleteAll();
 
-        testUser = new User("testuser", passwordEncoder.encode("password123!"));
-        userRepository.save(testUser);
+        String uniqueUsername = "mypage_user_" + System.nanoTime();
+        testUser = new User(uniqueUsername, passwordEncoder.encode("password123!"));
+        userRepository.saveAndFlush(testUser);
 
         Product testProduct = Product.builder()
                 .name("Test Product")
-                .model("TP-123")
+                .model("MP-123_" + System.nanoTime())
                 .releaseDate(LocalDate.now())
                 .retailPrice(BigDecimal.valueOf(100000))
+                .stock(10)
+                .partnerId(1L)
                 .build();
-        productRepository.save(testProduct);
+        productRepository.saveAndFlush(testProduct);
+
+        be.kicksync_backend.feature.order.entity.Address address = new be.kicksync_backend.feature.order.entity.Address("12345", "Street", "Detail");
+        be.kicksync_backend.feature.order.entity.OrderItem orderItem = be.kicksync_backend.feature.order.entity.OrderItem.builder()
+                .product(testProduct)
+                .quantity(1)
+                .orderPrice(testProduct.getRetailPrice())
+                .build();
 
         Order testOrder = Order.builder()
                 .user(testUser)
-                .product(testProduct)
-                .finalPrice(BigDecimal.valueOf(120000))
-                .orderDate(LocalDateTime.now())
+                .address(address)
+                .receiverName("Receiver")
+                .receiverPhone("010-1234-5678")
+                .requestMessage("Message")
+                .orderItems(java.util.List.of(orderItem))
                 .build();
-        orderRepository.save(testOrder);
+        orderRepository.saveAndFlush(testOrder);
     }
 
     private String getAccessToken() throws Exception {
