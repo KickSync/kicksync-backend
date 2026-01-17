@@ -4,6 +4,9 @@ import be.kicksync_backend.common.dto.ApiResponse;
 import be.kicksync_backend.common.dto.ResponseText;
 import be.kicksync_backend.feature.product.dto.ProductResponseDto;
 import be.kicksync_backend.feature.product.service.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Product", description = "상품 조회 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/products")
@@ -27,6 +31,10 @@ public class ProductController {
      *
      * @return 모든 상품 정보 리스트
      */
+    @Operation(summary = "전체 상품 조회", description = "모든 상품 목록을 페이지네이션하여 조회합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "상품 목록 조회 성공")
+    })
     @GetMapping
     public ResponseEntity<ApiResponse<Page<ProductResponseDto>>> getAllProducts(
             @PageableDefault(size = 20, sort = "id") Pageable pageable) {
@@ -45,6 +53,11 @@ public class ProductController {
      * @param productId 조회할 상품의 ID
      * @return 단일 상품 정보
      */
+    @Operation(summary = "단일 상품 조회", description = "특정 상품의 상세 정보를 조회합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "상품 조회 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음")
+    })
     @GetMapping("/{productId}")
     public ResponseEntity<ApiResponse<ProductResponseDto>> getProduct(@PathVariable Long productId) {
         ProductResponseDto product = productService.getProduct(productId);

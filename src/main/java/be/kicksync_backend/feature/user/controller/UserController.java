@@ -7,6 +7,9 @@ import be.kicksync_backend.feature.user.dto.UserLoginRequestDto;
 import be.kicksync_backend.feature.user.dto.UserResponseDto;
 import be.kicksync_backend.feature.user.dto.UserSignupRequestDto;
 import be.kicksync_backend.feature.user.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,6 +20,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
+@Tag(name = "User", description = "사용자 관리 API")
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -30,6 +34,11 @@ public class UserController {
      * @param requestDto 사용자 회원가입 요청 데이터
      * @return 생성된 사용자 정보
      */
+    @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "회원가입 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
+    })
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<UserResponseDto>> signup(@Valid @RequestBody UserSignupRequestDto requestDto) {
         UserResponseDto userResponseDto = userService.signup(requestDto);
@@ -47,6 +56,11 @@ public class UserController {
      * @param requestDto 사용자 로그인 요청 데이터
      * @return JWT 토큰
      */
+    @Operation(summary = "로그인", description = "사용자 로그인을 수행하고 JWT 토큰을 발급합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그인 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패")
+    })
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<JwtResponseDto>> login(@Valid @RequestBody UserLoginRequestDto requestDto) {
         JwtResponseDto jwtResponseDto = userService.login(requestDto);
@@ -65,6 +79,10 @@ public class UserController {
      * @param userDetails 현재 인증된 사용자 정보
      * @return 성공 메시지
      */
+    @Operation(summary = "로그아웃", description = "사용자를 로그아웃 처리합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그아웃 성공")
+    })
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -86,6 +104,10 @@ public class UserController {
      * @param userDetails 현재 인증된 사용자 정보
      * @return 성공 메시지
      */
+    @Operation(summary = "회원 탈퇴", description = "사용자 계정을 삭제합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 탈퇴 성공")
+    })
     @DeleteMapping("/account")
     public ResponseEntity<ApiResponse<Void>> deleteAccount(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         userService.deleteAccount(userDetails);

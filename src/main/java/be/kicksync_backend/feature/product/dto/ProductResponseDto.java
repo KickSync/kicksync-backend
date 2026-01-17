@@ -3,6 +3,7 @@ package be.kicksync_backend.feature.product.dto;
 import be.kicksync_backend.feature.product.entity.Product;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -10,10 +11,19 @@ import java.time.LocalDate;
 
 @Getter
 public class ProductResponseDto {
+    @Schema(description = "상품 ID (PK)", example = "100")
     private final Long id;
+
+    @Schema(description = "상품명", example = "Nike Air Max")
     private final String name;
+
+    @Schema(description = "모델명", example = "AM-2024-001")
     private final String model;
+
+    @Schema(description = "발매일", example = "2024-01-01")
     private final LocalDate releaseDate;
+
+    @Schema(description = "발매가", example = "159000")
     private final BigDecimal retailPrice;
 
     public ProductResponseDto(Product product) {

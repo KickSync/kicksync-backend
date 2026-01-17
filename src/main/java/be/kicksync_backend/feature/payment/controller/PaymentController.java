@@ -8,6 +8,9 @@ import be.kicksync_backend.feature.payment.dto.PaymentResponseDto;
 import be.kicksync_backend.feature.payment.entity.Payment;
 import be.kicksync_backend.feature.payment.service.PaymentService;
 import com.siot.IamportRestClient.exception.IamportResponseException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
+@Tag(name = "Payment", description = "결제 관리 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/payments")
@@ -33,6 +37,11 @@ public class PaymentController {
      * @param userDetails 현재 인증된 사용자 정보
      * @return 검증된 결제 정보
      */
+    @Operation(summary = "결제 검증 및 저장", description = "PG사 결제 후 서버에서 검증하고 저장합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "결제 검증 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "결제 금액 불일치 등 검증 실패")
+    })
     @PostMapping("/verify")
     public ResponseEntity<ApiResponse<PaymentResponseDto>> verifyPayment(
             @Valid @RequestBody PaymentRequestDto requestDto,
@@ -53,6 +62,11 @@ public class PaymentController {
      * @param userDetails 현재 인증된 사용자 정보
      * @return 결제 내역
      */
+    @Operation(summary = "주문별 결제 내역 조회", description = "특정 주문의 결제 정보를 조회합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "결제 정보를 찾을 수 없음")
+    })
     @GetMapping("/order/{orderId}")
     public ResponseEntity<ApiResponse<PaymentResponseDto>> getPaymentByOrderId(
             @PathVariable Long orderId,
@@ -72,6 +86,10 @@ public class PaymentController {
      * @param userDetails 현재 인증된 사용자 정보
      * @return 사용자의 결제 내역 목록
      */
+    @Operation(summary = "내 결제 내역 목록", description = "사용자의 모든 결제 내역을 조회합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공")
+    })
     @GetMapping("")
     public ResponseEntity<ApiResponse<List<PaymentResponseDto>>> getMyPayments(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
