@@ -20,6 +20,15 @@
 
 플랫폼 성장에 따라 급증하는 트래픽과 정산 데이터를 효율적으로 처리하기 위해 **"시스템이 확장에 유연한가?", "데이터 정합성은 보장되는가?"** 를 검증하며 엔지니어링 문제를 해결했습니다.
 
+### 주요 기능
+
+  * **Order:** Redisson 분산 락 기반 재고 정합성 확보 및 Race Condition 방지
+  * **Payment:** PortOne 연동을 통한 실결제 금액 검증 및 결제 위변조 방지 로직 구현
+  * **Settlement:** Spring Batch Partitioning을 활용한 대용량 정산 데이터 병렬 처리 최적화
+  * **Auth:** JWT 및 Redis(Access/Refresh Token) 기반의 Stateless 인증 시스템 구축
+  * **Infrastructure:** AOP를 활용한 공통 관심사 분리 및 Global Exception Handler 표준화
+  * **Documentation:** Swagger(OpenAPI 3.0)를 이용한 API 명세 자동화 및 관리
+
 <br><br>
 
 ## 2. 아키텍처 및 핵심 프로세스
@@ -34,6 +43,78 @@
 
 ### 2-3. 핵심 서비스 흐름
 
+```mermaid
+flowchart TD
+    %% ==========================================
+    %% 1. Actors & Systems Definition
+    %% ==========================================
+    User([사용자])
+    Partner([입점사/파트너])
+    System(KickSync Server)
+    DB[(Database)]
+    Scheduler((Batch Scheduler))
+
+    %% ==========================================
+    %% 2. Subgraph Definitions (Phases)
+    %% ==========================================
+
+    %% Phase 1: 주문 및 결제
+    subgraph OrderPay ["1. 주문 및 결제"]
+        User   -->|주문/결제| System
+        System -->|결제 검증 및 저장| DB
+    end
+
+    %% Phase 2: 배송 및 수령
+    subgraph Delivery ["2. 배송 및 수령"]
+        Partner -->|상품 발송| System
+        System  -->|배송 완료 처리| DB
+    end
+
+    %% Phase 3: 구매 확정 (New)
+    %% 소괄호가 포함된 제목은 반드시 큰따옴표("")로 감싸야 오류가 나지 않습니다.
+    subgraph ConfirmProcess ["3. 구매 확정 (반품 기한 확보)"]
+        direction TB
+        Wait{"배송 완료 후<br/>7일 경과?"}
+        
+        %% 조건 분기
+        Wait -- "No (반품 요청)" --> Return[반품/환불 처리]
+        Wait -- "Yes (자동 확정)" --> AutoConfirm[상태 변경: 구매 확정]
+        
+        %% 사용자 수동 확정 및 DB 반영
+        User -- "수취 확인 (수동)" --> AutoConfirm
+        AutoConfirm -->|"Status: PURCHASE_CONFIRMED"| DB
+    end
+
+    %% Phase 4: 정산 배치
+    subgraph SettlementProcess ["4. 정산 배치 (매일 실행)"]
+        Scheduler     -->|"매일 새벽 실행"| Job[Settlement Job]
+        Job           -->|"1. 정산 대상 조회"| DB
+        
+        %% 주석 노드 연결
+        note1["조건: 상태 = 구매확정(CONFIRMED)<br/>(반품 리스크가 사라진 주문만 집계)"]
+        Job -.-> note1
+        
+        %% 배치 처리 흐름
+        Job           -->|"2. 파트너별 금액 집계"| Processor[Item Processor]
+        Processor     -->|"3. 수수료 제외 및 세금 계산"| Processor
+        Processor     -->|"4. 정산 데이터 생성"| DB
+    end
+
+    %% ==========================================
+    %% 3. Overall Flow Connections
+    %% ==========================================
+    OrderPay        --> Delivery
+    Delivery        --> ConfirmProcess
+    ConfirmProcess  --> SettlementProcess
+
+    %% ==========================================
+    %% 4. System Status Feedback (Dashed)
+    %% ==========================================
+    OrderPay          -.->|"Status: PAYMENT_COMPLETED"| System
+    Delivery          -.->|"Status: DELIVERED"| System
+    ConfirmProcess    -.->|"Status: PURCHASE_CONFIRMED"| System
+    SettlementProcess -.->|"Settlement Entity 저장"| System
+```
 
 <br><br>
 
