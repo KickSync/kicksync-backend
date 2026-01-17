@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -33,7 +34,7 @@ public class OrderFacade {
     }
 
     public void cancelOrder(Long orderId, OrderCancelRequestDto cancelDto, Long userId) {
-        orderService.startCancelOrder(orderId, userId);
+        List<Long> productIds = orderService.startCancelOrder(orderId, userId);
 
         String reason = (cancelDto != null) ? cancelDto.getReason() : "사용자 요청에 의한 취소";
 
@@ -51,7 +52,7 @@ public class OrderFacade {
         }
 
         try {
-            orderService.finalizeCancelOrder(orderId, userId);
+            orderService.finalizeCancelOrder(orderId, userId, productIds);
         } catch (Exception e) {
             log.error("주문 취소 최종 확정 실패 (심각한 불일치 위험): orderId={}, error={}", orderId, e.getMessage());
             throw e;

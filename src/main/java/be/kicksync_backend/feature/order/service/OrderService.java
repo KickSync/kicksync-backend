@@ -12,13 +12,14 @@ import be.kicksync_backend.feature.product.entity.Product;
 import be.kicksync_backend.feature.product.repository.ProductRepository;
 import be.kicksync_backend.feature.user.entity.User;
 import be.kicksync_backend.feature.user.repository.UserRepository;
+import be.kicksync_backend.common.annotation.DistributedLock;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -120,7 +121,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void startCancelOrder(Long orderId, Long userId) {
+    public List<Long> startCancelOrder(Long orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
@@ -129,6 +130,10 @@ public class OrderService {
         }
 
         order.markAsCancelling();
+
+        return order.getOrderItems().stream()
+                .map(item -> item.getProduct().getId())
+                .toList();
     }
 
     @Transactional
@@ -139,15 +144,23 @@ public class OrderService {
         log.warn("주문 취소 롤백 (외부 결제 취소 실패): orderId={}, userId={}", orderId, userId);
     }
 
+    @DistributedLock(
+            key = "#productIds",
+            waitTime = 10,
+            leaseTime = 10,
+            timeUnit = TimeUnit.SECONDS
+    )
     @Transactional
-    public void finalizeCancelOrder(Long orderId, Long userId) {
+    public void finalizeCancelOrder(Long orderId, Long userId, List<Long> productIds) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
         order.cancel();
 
         for (OrderItem item : order.getOrderItems()) {
-            productRepository.increaseStock(item.getProduct().getId(), item.getQuantity());
+            Product product = productRepository.findById(item.getProduct().getId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+            product.increaseStock(item.getQuantity());
         }
 
         log.info("주문 취소 완료 (DB 업데이트 & 재고 복구): orderId={}, userId={}", orderId, userId);
