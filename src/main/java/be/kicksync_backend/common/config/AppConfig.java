@@ -1,31 +1,13 @@
 package be.kicksync_backend.common.config;
 
-import be.kicksync_backend.common.exception.CustomException;
-import be.kicksync_backend.common.exception.ErrorCode;
-import be.kicksync_backend.common.security.UserDetailsImpl;
-import be.kicksync_backend.feature.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
-@RequiredArgsConstructor
+@EnableCaching
+@EnableScheduling
+@EnableJpaAuditing
 public class AppConfig {
-
-    private final UserRepository userRepository;
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByUsername(username)
-                .map(UserDetailsImpl::build)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 }
