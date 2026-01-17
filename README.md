@@ -26,8 +26,7 @@
   * **Payment:** PortOne 연동을 통한 실결제 금액 검증 및 결제 위변조 방지 로직 구현
   * **Settlement:** Spring Batch Partitioning을 활용한 대용량 정산 데이터 병렬 처리 최적화
   * **Auth:** JWT 및 Redis(Access/Refresh Token) 기반의 Stateless 인증 시스템 구축
-  * **Infrastructure:** AOP를 활용한 공통 관심사 분리 및 Global Exception Handler 표준화
-  * **Documentation:** Swagger(OpenAPI 3.0)를 이용한 API 명세 자동화 및 관리
+
 
 <br><br>
 
