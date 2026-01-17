@@ -19,9 +19,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,34 +38,15 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
-    @Transactional(readOnly = true)
-    public void preValidateOrder(OrderCreateRequestDto requestDto, Long userId) {
-        if (requestDto.getOrderItems() == null || requestDto.getOrderItems().isEmpty()) {
-            throw new CustomException(ErrorCode.EMPTY_ORDER_ITEMS);
-        }
-
-        userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        List<Long> partnerIds = requestDto.getOrderItems().stream()
-                .map(itemDto -> {
-                    Product product = productRepository.findById(itemDto.getProductId())
-                            .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-                    return product.getPartnerId();
-                })
-                .distinct()
-                .toList();
-
-        if (partnerIds.size() > 1) {
-            throw new CustomException(ErrorCode.MULTIPLE_PARTNERS_IN_ORDER);
-        }
-    }
-
-    public OrderResponseDto createOrder(OrderCreateRequestDto requestDto, Long userId) {
+    public List<OrderResponseDto> createOrder(OrderCreateRequestDto requestDto, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        List<OrderItem> orderItems = requestDto.getOrderItems().stream()
+        // 통합 결제 번호 생성 (merchantUid)
+        String merchantUid = "ORD-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + "-" + UUID.randomUUID().toString().substring(0, 8);
+
+        // PartnerId 별로 OrderItem 그룹화
+        Map<Long, List<OrderItem>> orderItemsByPartner = requestDto.getOrderItems().stream()
                 .map(itemDto -> {
                     Product product = productRepository.findByIdForce(itemDto.getProductId())
                             .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
@@ -75,34 +61,44 @@ public class OrderService {
                             .quantity(itemDto.getQuantity())
                             .orderPrice(product.getRetailPrice())
                             .build();
-                }).toList();
+                })
+                .collect(Collectors.groupingBy(item -> item.getProduct().getPartner().getId()));
 
-        BigDecimal totalAmount = orderItems.stream()
-                .map(item -> item.getOrderPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        List<Order> savedOrders = new ArrayList<>();
 
-        Order order = Order.builder()
-                .user(user)
-                .receiverName(requestDto.getReceiverName())
-                .receiverPhone(requestDto.getReceiverPhone())
-                .address(new be.kicksync_backend.feature.order.entity.Address(
-                        requestDto.getAddress().getZipcode(),
-                        requestDto.getAddress().getStreet(),
-                        requestDto.getAddress().getDetail()))
-                .requestMessage(requestDto.getRequestMessage())
-                .orderItems(orderItems)
-                .build();
+        // 그룹별로 주문 생성
+        for (Map.Entry<Long, List<OrderItem>> entry : orderItemsByPartner.entrySet()) {
+            Long partnerId = entry.getKey();
+            List<OrderItem> items = entry.getValue();
+            if (items.isEmpty()) continue;
 
-        for (OrderItem item : orderItems) {
-            item.setOrder(order);
+            Order order = Order.builder()
+                    .user(user)
+                    .receiverName(requestDto.getReceiverName())
+                    .receiverPhone(requestDto.getReceiverPhone())
+                    .address(new be.kicksync_backend.feature.order.entity.Address(
+                            requestDto.getAddress().getZipcode(),
+                            requestDto.getAddress().getStreet(),
+                            requestDto.getAddress().getDetail()))
+                    .requestMessage(requestDto.getRequestMessage())
+                    .orderItems(items)
+                    .partnerId(partnerId)
+                    .merchantUid(merchantUid)
+                    .build();
+
+            for (OrderItem item : items) {
+                item.setOrder(order);
+            }
+
+            savedOrders.add(orderRepository.save(order));
         }
 
-        Order savedOrder = orderRepository.save(order);
+        log.info("통합 주문 생성 완료: merchantUid={}, userId={}, splitOrders={}",
+                merchantUid, userId, savedOrders.size());
 
-        log.info("주문 생성 완료: orderId={}, userId={}, items={}",
-                savedOrder.getId(), userId, savedOrder.getOrderItems().size());
-
-        return OrderResponseDto.from(savedOrder);
+        return savedOrders.stream()
+                .map(OrderResponseDto::from)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

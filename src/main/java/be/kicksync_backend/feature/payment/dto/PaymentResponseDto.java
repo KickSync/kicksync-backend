@@ -15,8 +15,8 @@ public class PaymentResponseDto {
     @Schema(description = "결제 ID", example = "1")
     private final Long paymentId;
     
-    @Schema(description = "주문 ID", example = "1")
-    private final Long orderId;
+    @Schema(description = "주문 번호 (Unified)", example = "ORD-20240101-UUID")
+    private final String merchantUid;
     
     @Schema(description = "결제 금액", example = "150000")
     private final BigDecimal paymentAmount;
@@ -36,7 +36,7 @@ public class PaymentResponseDto {
     public static PaymentResponseDto from(Payment payment) {
         return PaymentResponseDto.builder()
                 .paymentId(payment.getId())
-                .orderId(payment.getOrderId())
+                .merchantUid(payment.getMerchantUid())
                 .paymentAmount(payment.getPaymentAmount())
                 .paymentDate(payment.getPaymentDate())
                 .paymentMethod(payment.getPaymentMethod())

@@ -27,7 +27,7 @@ public class PaymentTransactionService {
     private final OrderRepository orderRepository;
 
     @Transactional
-    public Payment savePaymentRecord(com.siot.IamportRestClient.response.Payment paymentInfo, Order order) {
+    public Payment savePaymentRecord(com.siot.IamportRestClient.response.Payment paymentInfo, java.util.List<Order> orders) {
         Optional<Payment> existingPayment = paymentRepository.findByImpUid(paymentInfo.getImpUid());
         if (existingPayment.isPresent()) {
             return existingPayment.get();
@@ -35,14 +35,13 @@ public class PaymentTransactionService {
 
         String lastFourDigits = getLastFourDigits(paymentInfo);
 
-        if (order.getOrderItems().isEmpty()) {
+        if (orders.isEmpty()) {
             throw new CustomException(ErrorCode.ORDER_NOT_FOUND);
         }
+        Order firstOrder = orders.get(0);
 
         Payment payment = Payment.builder()
-                .partnerId(order.getOrderItems().get(0).getProduct().getPartnerId())
-                .user(order.getUser())
-                .order(order)
+                .user(firstOrder.getUser())
                 .paymentAmount(paymentInfo.getAmount())
                 .paymentDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(paymentInfo.getPaidAt().getTime()), ZoneId.systemDefault()))
                 .impUid(paymentInfo.getImpUid())
@@ -66,10 +65,12 @@ public class PaymentTransactionService {
     }
 
     @Transactional
-    public Payment completePaymentVerification(com.siot.IamportRestClient.response.Payment paymentInfo, Order order) {
-        Payment payment = savePaymentRecord(paymentInfo, order);
-        order.processPaymentSuccess();
-        orderRepository.save(order);
+    public Payment completePaymentVerification(com.siot.IamportRestClient.response.Payment paymentInfo, java.util.List<Order> orders) {
+        Payment payment = savePaymentRecord(paymentInfo, orders);
+        for (Order order : orders) {
+            order.processPaymentSuccess();
+            orderRepository.save(order);
+        }
         return payment;
     }
 

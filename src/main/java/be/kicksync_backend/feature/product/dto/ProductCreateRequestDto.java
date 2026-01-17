@@ -1,5 +1,6 @@
 package be.kicksync_backend.feature.product.dto;
 
+import be.kicksync_backend.feature.partner.entity.Partner;
 import be.kicksync_backend.feature.product.entity.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -36,13 +37,17 @@ public class ProductCreateRequestDto {
     @DecimalMin(value = "0.0", inclusive = false, message = "소매가는 0보다 커야 합니다")
     private BigDecimal retailPrice;
 
-    public Product toEntity(Long partnerId) {
+    @Schema(description = "입점사 ID", example = "1")
+    @NotNull(message = "입점사 ID는 필수입니다")
+    private Long partnerId;
+
+    public Product toEntity(Partner partner) {
         return Product.builder()
                 .name(this.name)
                 .model(this.model)
                 .releaseDate(this.releaseDate)
                 .retailPrice(this.retailPrice)
-                .partnerId(partnerId)
+                .partner(partner)
                 .build();
     }
 } 

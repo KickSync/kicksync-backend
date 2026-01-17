@@ -3,6 +3,8 @@ package be.kicksync_backend.feature.order.dto;
 import be.kicksync_backend.feature.order.entity.OrderStatus;
 import be.kicksync_backend.feature.order.entity.Order;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -11,6 +13,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
+@Builder
+@AllArgsConstructor
 public class OrderResponseDto {
     @Schema(description = "주문 ID", example = "1")
     private final Long orderId;
@@ -38,7 +42,7 @@ public class OrderResponseDto {
         this.orderItems = order.getOrderItems().stream()
                 .map(OrderItemResponseDto::new)
                 .collect(Collectors.toList());
-        this.merchantUid = order.getId().toString();
+        this.merchantUid = order.getMerchantUid();
     }
 
     public static OrderResponseDto from(Order order) {

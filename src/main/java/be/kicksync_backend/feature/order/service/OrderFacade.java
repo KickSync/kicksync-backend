@@ -29,7 +29,7 @@ public class OrderFacade {
             leaseTime = 10,
             timeUnit = TimeUnit.SECONDS
     )
-    public OrderResponseDto createOrderWithLock(OrderCreateRequestDto requestDto, Long userId) {
+    public List<OrderResponseDto> createOrderWithLock(OrderCreateRequestDto requestDto, Long userId) {
         return orderService.createOrder(requestDto, userId);
     }
 

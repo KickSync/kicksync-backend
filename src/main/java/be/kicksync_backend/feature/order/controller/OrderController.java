@@ -46,11 +46,11 @@ public class OrderController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "재고 부족 또는 잘못된 요청")
     })
     @PostMapping
-    public ResponseEntity<ApiResponse<OrderResponseDto>> createOrder(
+    public ResponseEntity<ApiResponse<List<OrderResponseDto>>> createOrder(
             @Valid @RequestBody OrderCreateRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        OrderResponseDto responseDto = orderFacade.createOrderWithLock(requestDto, userDetails.getUser().getId());
-        ApiResponse<OrderResponseDto> apiResponse = ApiResponse.<OrderResponseDto>builder()
+        List<OrderResponseDto> responseDto = orderFacade.createOrderWithLock(requestDto, userDetails.getUser().getId());
+        ApiResponse<List<OrderResponseDto>> apiResponse = ApiResponse.<List<OrderResponseDto>>builder()
                 .msg(ResponseText.ORDER_CREATE_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.CREATED.value()))
                 .data(responseDto)
