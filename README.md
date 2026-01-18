@@ -22,10 +22,16 @@
 
 ### 주요 기능
 
-  * **Order:** Redisson 분산 락 기반 재고 정합성 확보 및 Race Condition 방지
-  * **Payment:** PortOne 연동을 통한 실결제 금액 검증 및 결제 위변조 방지 로직 구현
-  * **Settlement:** Spring Batch Partitioning을 활용한 대용량 정산 데이터 병렬 처리 최적화
-  * **Auth:** JWT 및 Redis(Access/Refresh Token) 기반의 Stateless 인증 시스템 구축
+* **Commerce (주문 및 결제 흐름):**
+    * **동시성 제어:** 한정판 신발의 선착순 구매 시 발생하는 재고 충돌(Race Condition)을 **Redisson 분산 락**으로 해결하여 초과 주문 방지.
+    * **무결성 검증:** **PortOne** API 연동을 통해 결제 요청 금액과 승인 금액을 교차 검증하고 **주문 취소/반품** 시 트랜잭션 단위로 정확한 환불 처리 보장.
+
+* **Settlement (입점사 정산 시스템):**
+    * **대용량 배치:** 크림/무신사와 같은 **입점사별 수수료 정책**을 적용하여 매일 발생하는 대규모 판매 데이터를 **Spring Batch Partitioning**으로 병렬 정산 처리.
+    * **성능 최적화:** 정산 데이터 집계 시 **Bulk Insert**와 **Chunk** 지향 처리를 통해 배치 수행 시간을 단축.
+
+* **Auth (인증 및 보안):**
+    * **Stateless:** **JWT** 기반의 인증 구조로 입점사/구매자/관리자 권한을 분리하고 **Redis**를 활용한 로그아웃(Blacklist) 및 토큰 재발급(Refresh Token) 구현.
 
 
 <br><br>
@@ -38,82 +44,11 @@
 
 ### 2-2. 배치 프로세스 아키텍처
 
-<img width="895" alt="Batch Process Architecture" src="https://github.com/user-attachments/assets/7e991801-31e0-41a3-aa0e-928188e5eba3" />
+<img width="100%" alt="Batch Process Architecture" src="https://github.com/user-attachments/assets/7e991801-31e0-41a3-aa0e-928188e5eba3" />
 
 ### 2-3. 핵심 서비스 흐름
 
-```mermaid
-flowchart TD
-    %% ==========================================
-    %% 1. Actors & Systems Definition
-    %% ==========================================
-    User([사용자])
-    Partner([입점사/파트너])
-    System(KickSync Server)
-    DB[(Database)]
-    Scheduler((Batch Scheduler))
-
-    %% ==========================================
-    %% 2. Subgraph Definitions (Phases)
-    %% ==========================================
-
-    %% Phase 1: 주문 및 결제
-    subgraph OrderPay ["1. 주문 및 결제"]
-        User   -->|주문/결제| System
-        System -->|결제 검증 및 저장| DB
-    end
-
-    %% Phase 2: 배송 및 수령
-    subgraph Delivery ["2. 배송 및 수령"]
-        Partner -->|상품 발송| System
-        System  -->|배송 완료 처리| DB
-    end
-
-    %% Phase 3: 구매 확정 (New)
-    %% 소괄호가 포함된 제목은 반드시 큰따옴표("")로 감싸야 오류가 나지 않습니다.
-    subgraph ConfirmProcess ["3. 구매 확정 (반품 기한 확보)"]
-        direction TB
-        Wait{"배송 완료 후<br/>7일 경과?"}
-        
-        %% 조건 분기
-        Wait -- "No (반품 요청)" --> Return[반품/환불 처리]
-        Wait -- "Yes (자동 확정)" --> AutoConfirm[상태 변경: 구매 확정]
-        
-        %% 사용자 수동 확정 및 DB 반영
-        User -- "수취 확인 (수동)" --> AutoConfirm
-        AutoConfirm -->|"Status: PURCHASE_CONFIRMED"| DB
-    end
-
-    %% Phase 4: 정산 배치
-    subgraph SettlementProcess ["4. 정산 배치 (매일 실행)"]
-        Scheduler     -->|"매일 새벽 실행"| Job[Settlement Job]
-        Job           -->|"1. 정산 대상 조회"| DB
-        
-        %% 주석 노드 연결
-        note1["조건: 상태 = 구매확정(CONFIRMED)<br/>(반품 리스크가 사라진 주문만 집계)"]
-        Job -.-> note1
-        
-        %% 배치 처리 흐름
-        Job           -->|"2. 파트너별 금액 집계"| Processor[Item Processor]
-        Processor     -->|"3. 수수료 제외 및 세금 계산"| Processor
-        Processor     -->|"4. 정산 데이터 생성"| DB
-    end
-
-    %% ==========================================
-    %% 3. Overall Flow Connections
-    %% ==========================================
-    OrderPay        --> Delivery
-    Delivery        --> ConfirmProcess
-    ConfirmProcess  --> SettlementProcess
-
-    %% ==========================================
-    %% 4. System Status Feedback (Dashed)
-    %% ==========================================
-    OrderPay          -.->|"Status: PAYMENT_COMPLETED"| System
-    Delivery          -.->|"Status: DELIVERED"| System
-    ConfirmProcess    -.->|"Status: PURCHASE_CONFIRMED"| System
-    SettlementProcess -.->|"Settlement Entity 저장"| System
-```
+<img width="1222" height="952" alt="image" src="https://github.com/user-attachments/assets/a5dcec06-ac7e-48b3-bdfc-096b85d7f41b" />
 
 <br><br>
 
@@ -225,7 +160,7 @@ flowchart TD
 * **검증 결과 및 판단 근거:**
 * **결과:** nGrinder 부하 테스트 결과, TPS는 **1,736 → 5,831 (약 3.3배)** 로 폭발적으로 증가했으며, 평균 응답 시간은 **26.7ms → 6.99ms (73% 단축)** 로 개선됨.
   * **Trade-off:** 캐시 도입 시 원본 데이터(DB)와 캐시 데이터(Redis) 간의 **정합성 불일치** 가 발생할 수 있으며, Redis 인프라 비용이 추가됨.
-  * **Decision:** '상품 목록'은 결제나 재고처럼 실시간 강한 정합성이 요구되는 도메인이 아닌, 다수의 사용자에게 빠르게 노출되어야 하는 **전시 도메인**입니다. 따라서 **미세한 데이터 반영 지연보다는 응답 속도 확보와 DB 보호가 비즈니스적으로 더 중요하다고 판단**하여 캐싱을 적용했습니다.
+  * **판단 근거:** '상품 목록'은 결제나 재고처럼 실시간 강한 정합성이 요구되는 도메인이 아닌, 다수의 사용자에게 빠르게 노출되어야 하는 **전시 도메인**입니다. 따라서 **미세한 데이터 반영 지연보다는 응답 속도 확보와 DB 보호가 비즈니스적으로 더 중요하다고 판단**하여 캐싱을 적용했습니다.
 
 
 * **정량적 성과 (nGrinder 부하 테스트 결과)**
