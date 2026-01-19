@@ -123,7 +123,6 @@
   * **Pessimistic Lock (DB):** 확실한 데이터 보호는 가능하나, 데드락 위험 및 대기 시간 증가로 인한 트래픽 병목 우려 → **[보류]**
   * **Redis Distributed Lock (Redisson):** Pub/Sub 방식을 사용하여 Redis 부하를 줄이면서 분산 환경 제어 가능 → **[채택]**
 
-
 * **검증 결과:**
   * 동시 요청 500건 테스트 시 **재고 오차 0건** 달성.
   * `WaitTime`과 `LeaseTime` 설정을 통해 데드락 방지 및 UX 고려.
@@ -161,7 +160,7 @@
 >
 > </div>
 > </details>
-<br><br>
+   <br><br>
 
 ### [ Phase 3 ] 캐싱 전략을 통한 조회 성능 236% 개선
 
@@ -187,31 +186,31 @@
   | **Mean Test Time** | 26.70ms | **6.99ms** | **약 73.8% 단축** |
   | **Total Executed Tests** | 515,159 | **1,728,652** | **약 235% 증가** |
 
-> <details>
-> <summary><strong>[성능 지표] nGrinder 부하 테스트 상세 그래프 확인하기</strong></summary>
-> <div markdown="1">
-> <br>
->
-> #### 1. 전체 상품 조회 (1,000건)
->
-> **[ 캐시 미적용 ]**
-> <img width="100%" alt="image" src="https://github.com/user-attachments/assets/a8a60f55-ded3-463d-a12f-52f7bea0e1bd" />
->
-> **[ 캐시 적용 ]**
-> <img width="100%" alt="image" src="https://github.com/user-attachments/assets/d146f350-f8ba-4463-8479-955a9f7e6e08" />
->
-> <br>
->
-> #### 2. 페이징 조회 (40건) - *Main Result*
->
-> **[ 캐시 미적용 ]**
-> <img width="100%" alt="image" src="https://github.com/user-attachments/assets/93da321c-1319-4b59-a299-cbcc1e1f3dd7" />
->
-> **[ 캐시 적용 ]**
-> <img width="100%" alt="image" src="https://github.com/user-attachments/assets/d667326a-7e62-499d-bcdb-b29fc57f3255" />
->
-> </div>
-> </details>
+   > <details>
+   > <summary><strong>[성능 지표] nGrinder 부하 테스트 상세 그래프 확인하기</strong></summary>
+   > <div markdown="1">
+   > <br>
+   >
+   > #### 1. 전체 상품 조회 (1,000건)
+   >
+   > **[ 캐시 미적용 ]**
+   > <img width="100%" alt="image" src="https://github.com/user-attachments/assets/a8a60f55-ded3-463d-a12f-52f7bea0e1bd" />
+   >
+   > **[ 캐시 적용 ]**
+   > <img width="100%" alt="image" src="https://github.com/user-attachments/assets/d146f350-f8ba-4463-8479-955a9f7e6e08" />
+   >
+   > <br>
+   >
+   > #### 2. 페이징 조회 (40건) - *Main Result*
+   >
+   > **[ 캐시 미적용 ]**
+   > <img width="100%" alt="image" src="https://github.com/user-attachments/assets/93da321c-1319-4b59-a299-cbcc1e1f3dd7" />
+   >
+   > **[ 캐시 적용 ]**
+   > <img width="100%" alt="image" src="https://github.com/user-attachments/assets/d667326a-7e62-499d-bcdb-b29fc57f3255" />
+   >
+   > </div>
+   > </details>
 
 --------
 <br><br>
