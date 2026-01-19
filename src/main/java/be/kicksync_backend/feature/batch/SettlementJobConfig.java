@@ -157,7 +157,7 @@ public class SettlementJobConfig {
         }
 
         Map<String, Object> parameters = new HashMap<>();
-        List<OrderStatus> paidStatuses = Arrays.asList(OrderStatus.PAYMENT_COMPLETED, OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.SETTLED);
+        List<OrderStatus> paidStatuses = Arrays.asList(OrderStatus.PAYMENT_COMPLETED, OrderStatus.PREPARING, OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.SETTLED);
         parameters.put("paidStatuses", paidStatuses);
         parameters.put("cancelledStatus", OrderStatus.CANCELLED);
         parameters.put("startDate", startDate);

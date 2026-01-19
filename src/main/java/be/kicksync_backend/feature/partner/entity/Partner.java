@@ -1,6 +1,7 @@
 package be.kicksync_backend.feature.partner.entity;
 
 import be.kicksync_backend.common.entity.BaseTimeEntity;
+import be.kicksync_backend.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -27,10 +28,15 @@ public class Partner extends BaseTimeEntity {
     @Column(nullable = false, precision = 5, scale = 4)
     private BigDecimal commissionRate; // 수수료
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Builder
-    public Partner(String name, String businessNumber, BigDecimal commissionRate) {
+    public Partner(String name, String businessNumber, BigDecimal commissionRate, User user) {
         this.name = name;
         this.businessNumber = businessNumber;
         this.commissionRate = commissionRate;
+        this.user = user;
     }
 }

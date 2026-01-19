@@ -32,13 +32,18 @@ public class ProductCreateRequestDto {
     @PastOrPresent(message = "출시일은 미래일 수 없습니다")
     private LocalDate releaseDate;
 
-    @Schema(description = "소매가", example = "100000")
-    @NotNull(message = "소매가는 필수입니다")
-    @DecimalMin(value = "0.0", inclusive = false, message = "소매가는 0보다 커야 합니다")
+    @Schema(description = "발매가", example = "10000")
+    @NotNull(message = "발매가는 필수입니다.")
+    @Positive(message = "발매가는 0보다 커야 합니다.")
     private BigDecimal retailPrice;
 
+    @Schema(description = "재고 수량", example = "100")
+    @NotNull(message = "재고 수량은 필수입니다.")
+    @Min(value = 1, message = "재고는 최소 1개 이상이어야 합니다.")
+    private Integer stock;
+
     @Schema(description = "입점사 ID", example = "1")
-    @NotNull(message = "입점사 ID는 필수입니다")
+    @NotNull(message = "입점사 ID는 필수입니다.")
     private Long partnerId;
 
     public Product toEntity(Partner partner) {
@@ -47,6 +52,7 @@ public class ProductCreateRequestDto {
                 .model(this.model)
                 .releaseDate(this.releaseDate)
                 .retailPrice(this.retailPrice)
+                .stock(this.stock)
                 .partner(partner)
                 .build();
     }

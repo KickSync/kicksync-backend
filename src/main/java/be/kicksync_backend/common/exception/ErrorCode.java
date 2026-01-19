@@ -22,6 +22,7 @@ public enum ErrorCode {
     UNAUTHORIZED_SUBSCRIBE(HttpStatus.FORBIDDEN, "구독 권한을 확인할 수 없습니다."),
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
     UNAUTHORIZED_ACTION(HttpStatus.FORBIDDEN, "이 작업을 수행할 권한이 없습니다."),
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 
     // Drop Event
     DROP_EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 드롭 이벤트를 찾을 수 없습니다."),
