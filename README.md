@@ -110,9 +110,7 @@
 
 <img width="100%" alt="Partitioning Architecture" src="https://github.com/user-attachments/assets/0d74dd20-e17a-4dcd-ab02-d39a4c51d9d6" />
 
-
-
-<br><br>
+<br><br><br>
 
 ### [ Phase 2 ] 동시 접속 상황에서의 재고 정합성 100% 보장
 
@@ -129,32 +127,40 @@
   * 동시 요청 500건 테스트 시 **재고 오차 0건** 달성.
   * `WaitTime`과 `LeaseTime` 설정을 통해 데드락 방지 및 UX 고려.
 
-<br>
-
-<details><summary><h3>[ 펼치기 ] Redisson 락 동작 로그 및 테스트 결과 & nGrinder 테스트 환경</h3></summary>
-<div markdown="1">
-
-```log
-// 락 획득 후 재고 차감 성공
-[Redisson Lock] 락 획득 성공: MultiLock([LOCK:product:1]) (User=178)
-[OrderService] 재고 차감: User=178, ProductId=1, 남은 재고=0, 요청 수량=1
-[Redisson Lock] 락 해제 완료: MultiLock([LOCK:product:1]) (User=178)
-
-// 재고 소진 후 즉시 예외 발생 (Fail-fast)
-[Redisson Lock] 락 획득 성공: MultiLock([LOCK:product:1]) (User=381)
-[Exception] CustomException occurred: [Code: INSUFFICIENT_STOCK, Message: 재고가 부족합니다.]
-[Redisson Lock] 락 해제 완료: MultiLock([LOCK:product:1]) (User=381)
-
-```
-
-### [nGrinder 테스트 환경]
-
-<img width="700" height="800" alt="image" src="https://github.com/user-attachments/assets/13bb98f2-ee53-4533-b184-c9e1f136ef4a" />
-
-</div>
-</details>
-
-<br>
+> <details>
+> <summary><strong>Redisson 락 동작 로그 및 테스트 환경 보기</strong></summary>
+> <div markdown="1">
+> <br>
+> 
+> **1. Redisson 락 동작 로그**
+>
+> ```log
+> // 1. 정상 주문 처리: 락 획득 -> 재고 차감 -> 락 해제
+> 18:07:57 INFO [DistributedLockAop] : [Redisson Lock] 락 획득 성공: [LOCK:product:1] (User=178)
+> 18:08:02 INFO [OrderService]       : [CONCURRENCY_TEST] 재고 차감: User=178, 남은 재고=9
+> 18:08:02 INFO [DistributedLockAop] : [Redisson Lock] 락 해제 완료: [LOCK:product:1] (User=178)
+> 
+> // 2. 동시성 환경 재고 소진 과정 (Race Condition 제어)
+> 18:08:05 INFO [OrderService]       : [CONCURRENCY_TEST] 재고 차감: User=189, 남은 재고=8
+> 18:08:05 INFO [OrderService]       : [CONCURRENCY_TEST] 재고 차감: User=13,  남은 재고=7
+> ...
+> 18:08:06 INFO [OrderService]       : [CONCURRENCY_TEST] 재고 차감: User=36,  남은 재고=0
+> 18:08:06 INFO [DistributedLockAop] : [Redisson Lock] 락 해제 완료: [LOCK:product:1] (User=36)
+> 
+> // 3. 재고 소진 후 접근 시: 락 획득 후 즉시 예외 발생 (Fail-fast)
+> 18:08:06 INFO [DistributedLockAop] : [Redisson Lock] 락 획득 성공: [LOCK:product:1] (User=381)
+> 18:08:06 WARN [GlobalExceptionHandler] : CustomException: [INSUFFICIENT_STOCK] 재고가 부족합니다.
+> 18:08:06 INFO [DistributedLockAop] : [Redisson Lock] 락 해제 완료: [LOCK:product:1] (User=381)
+> ```
+> <br>
+>
+> **2. nGrinder 테스트 환경**
+> 
+> <img width="100%" alt="image" src="https://github.com/user-attachments/assets/13bb98f2-ee53-4533-b184-c9e1f136ef4a" />
+>
+> </div>
+> </details>
+<br><br>
 
 ### [ Phase 3 ] 캐싱 전략을 통한 조회 성능 236% 개선
 
@@ -180,25 +186,31 @@
   | **Mean Test Time** | 26.70ms | **6.99ms** | **약 73.8% 단축** |
   | **Total Executed Tests** | 515,159 | **1,728,652** | **약 235% 증가** |
 
-<details><summary><h3>[ 펼치기 ] nGrinder 테스트 결과 그래프 확인</h3></summary>
-<div markdown="1">
-
-#### 1. 전체 상품 조회 (1000건)
-
-**[ 캐시 미적용 ]**
-<img width="100%" alt="image" src="https://github.com/user-attachments/assets/a8a60f55-ded3-463d-a12f-52f7bea0e1bd" />
-**[ 캐시 적용 ]**
-<img width="100%" alt="image" src="https://github.com/user-attachments/assets/d146f350-f8ba-4463-8479-955a9f7e6e08" />
-
-#### 2. 페이징 조회 (40건) - *Main Result*
-
-**[ 캐시 미적용 ]**
-<img width="100%" alt="image" src="https://github.com/user-attachments/assets/93da321c-1319-4b59-a299-cbcc1e1f3dd7" />
-**[ 캐시 적용 ]**
-<img width="100%" alt="image" src="https://github.com/user-attachments/assets/d667326a-7e62-499d-bcdb-b29fc57f3255" />
-
-</div>
-</details>
+> <details>
+> <summary><strong>[성능 지표] nGrinder 부하 테스트 상세 그래프 확인하기</strong></summary>
+> <div markdown="1">
+> <br>
+>
+> #### 1. 전체 상품 조회 (1,000건)
+>
+> **[ 캐시 미적용 ]**
+> <img width="100%" alt="image" src="https://github.com/user-attachments/assets/a8a60f55-ded3-463d-a12f-52f7bea0e1bd" />
+>
+> **[ 캐시 적용 ]**
+> <img width="100%" alt="image" src="https://github.com/user-attachments/assets/d146f350-f8ba-4463-8479-955a9f7e6e08" />
+>
+> <br>
+>
+> #### 2. 페이징 조회 (40건) - *Main Result*
+>
+> **[ 캐시 미적용 ]**
+> <img width="100%" alt="image" src="https://github.com/user-attachments/assets/93da321c-1319-4b59-a299-cbcc1e1f3dd7" />
+>
+> **[ 캐시 적용 ]**
+> <img width="100%" alt="image" src="https://github.com/user-attachments/assets/d667326a-7e62-499d-bcdb-b29fc57f3255" />
+>
+> </div>
+> </details>
 
 --------
 <br><br>
