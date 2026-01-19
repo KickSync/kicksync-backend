@@ -288,14 +288,3 @@
 --------
 <br><br>
 
-## 8. 주요 화면
-
-<br><br>
-
-## 9. 설치 및 실행
-
-```bash
-# Clone the repository
-
-
-```
