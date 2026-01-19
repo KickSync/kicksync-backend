@@ -59,10 +59,12 @@
 | Category | Technology | Reason for Selection |
 | --- | --- | --- |
 | **Language** | <img src="https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white"> | Virtual Threads 등 고성능 처리를 위한 최신 기능 지원 및 안정적인 생태계 활용 |
-| **Framework** | <img src="https://img.shields.io/badge/Spring_Boot_3.5.5-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/Spring_Batch-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> | 대용량 데이터의 안정적인 배치 처리와 트랜잭션 관리에 최적화된 프레임워크 선택 |
-| **Database** | <img src="https://img.shields.io/badge/MySQL_8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white"> <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white"> | 관계형 데이터의 무결성 보장(MySQL)과 분산 락/캐싱을 통한 고성능 I/O 처리(Redis) |
-| **ORM** | <img src="https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=hibernate&logoColor=white"> | 객체 지향적 도메인 설계와 생산성 확보, `Bulk Insert` 최적화 등 성능 튜닝 용이 |
-| **Infra & Test** | <img src="https://img.shields.io/badge/Oracle_Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white"> <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/nGrinder-FFA500?style=for-the-badge&logo=java&logoColor=white"> | **운영 비용 절감** 과 고성능 확보를 위해 AWS 대신 OCI ARM 인스턴스(4 OCPU, 24GB RAM)를 채택. **비용 "0"** 으로 실제 운영 환경에 준하는 고사양 테스트 서버를 구축하여 지속 가능한 서비스 환경 확보 |
+| **Framework** | <img src="https://img.shields.io/badge/Spring_Boot_3.5.5-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/Spring_Batch-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> | Chunk 지향 처리를 통한 대용량 데이터의 메모리 효율성 확보 및 Job Repository 기반의 배치 실패 이력 관리 용이 |
+| **Database** | <img src="https://img.shields.io/badge/MySQL_8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white"> <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white"> | ACID 트랜잭션을 통한 데이터 무결성 보장(MySQL) 및 인메모리 기반의 고속 캐싱과 분산 락 활용(Redis) |
+| **API Specs** | <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"> | 즉각적인 API 테스트 및 디버깅 환경 구축과 코드 변경에 따른 문서 자동 최신화 지원 |
+| **ORM** | <img src="https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=hibernate&logoColor=white"> | 객체 지향적 도메인 설계와 생산성 확보, `Bulk Insert` 등 쿼리 최적화 용이 |
+| **Infra & Test** | <img src="https://img.shields.io/badge/Oracle_Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white"> <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/nGrinder-FFA500?style=for-the-badge&logo=java&logoColor=white"> | OCI 프리티어를 활용하여 비용 부담 없이 고사양(4 OCPU, 24GB RAM) 테스트 서버 구축 및 지속 가능한 운영 환경 확보 |
+
 
 --------
 <br><br>
@@ -102,7 +104,7 @@
 <br>
 
 - **OOM 발생부터 파티셔닝 적용까지의 전체 과정**: [Velog 포스팅 바로가기](https://velog.io/write?id=28f459ea-74a8-4c89-af6c-668413d411b4)
-   - **주요 내용**: `JpaPagingItemReader` 한계 분석, 커버링 인덱스 적용 전후 실행 계획(Explain) 비교, 멀티 스레드 vs 파티셔닝 비교
+   - **주요 내용**: `JpaPagingItemReader` 한계 분석, 커버링 인덱스 적용 전후 비교, 멀티 스레드 vs 파티셔닝 비교
 
 <br>
 
@@ -146,7 +148,6 @@
 [Redisson Lock] 락 해제 완료: MultiLock([LOCK:product:1]) (User=381)
 
 ```
-<br>
 
 ### [nGrinder 테스트 환경]
 
