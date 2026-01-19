@@ -32,7 +32,7 @@
 
 * **Auth (인증 및 보안):**
     * **Stateless:** **JWT** 기반의 인증 구조로 입점사/구매자/관리자 권한을 분리하고 **Redis**를 활용한 로그아웃(Blacklist) 및 토큰 재발급(Refresh Token) 구현.
-
+--------
 
 <br><br>
 
@@ -50,6 +50,8 @@
 
 <img width="1222" height="952" alt="image" src="https://github.com/user-attachments/assets/a5dcec06-ac7e-48b3-bdfc-096b85d7f41b" />
 
+--------
+
 <br><br>
 
 ## 3. 기술 스택
@@ -62,6 +64,7 @@
 | **ORM** | <img src="https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=hibernate&logoColor=white"> | 객체 지향적 도메인 설계와 생산성 확보, `Bulk Insert` 최적화 등 성능 튜닝 용이 |
 | **Infra & Test** | <img src="https://img.shields.io/badge/Oracle_Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white"> <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/nGrinder-FFA500?style=for-the-badge&logo=java&logoColor=white"> | **운영 비용 절감** 과 고성능 확보를 위해 AWS 대신 OCI ARM 인스턴스(4 OCPU, 24GB RAM)를 채택. **비용 "0"** 으로 실제 운영 환경에 준하는 고사양 테스트 서버를 구축하여 지속 가능한 서비스 환경 확보 |
 
+--------
 <br><br>
 
 ## 4. 기술적 고도화
@@ -100,7 +103,7 @@
 
 ### **[ 파티셔닝 아키텍처 구조도 ]**
 
-<img width="80%" alt="Partitioning Architecture" src="https://github.com/user-attachments/assets/0d74dd20-e17a-4dcd-ab02-d39a4c51d9d6" />
+<img width="100%" alt="Partitioning Architecture" src="https://github.com/user-attachments/assets/0d74dd20-e17a-4dcd-ab02-d39a4c51d9d6" />
 
 <br><br>
 
@@ -191,6 +194,7 @@
 </div>
 </details>
 
+--------
 <br><br>
 
 ## 5. 트러블 슈팅
@@ -210,7 +214,9 @@
 * **해결 전략:** `JdbcTemplate`을 활용한 **Bulk Insert**로 전환.
 * **결과:** 처리 시간 20.2s → **0.67s (약 96% 성능 개선)**
 
+--------
 <br><br>
+
 
 ## 6. 설계 회고 및 한계 분석
 
@@ -252,6 +258,7 @@
 
 * **향후 개선안:** 데이터 불일치 허용 범위를 명확히 정의하고, 만료 시간을 짧게 가져가되 **Refresh Ahead** 전략을 혼합하여 정합성과 성능의 균형점을 지속적으로 튜닝할 계획입니다.
 
+--------
 <br><br>
 
 ## 7. ERD (최신화 예정)
@@ -260,6 +267,7 @@
 
 * **[ ERD Cloud 링크 바로가기 ](https://www.erdcloud.com/d/B5xBxsPqkP4uwSPt4)**
 
+--------
 <br><br>
 
 ## 8. 주요 화면
