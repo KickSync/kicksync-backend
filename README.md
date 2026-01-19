@@ -101,9 +101,16 @@
 
 <br>
 
+- **OOM 발생부터 파티셔닝 적용까지의 전체 과정**: [Velog 포스팅 바로가기](https://velog.io/write?id=28f459ea-74a8-4c89-af6c-668413d411b4)
+   - **주요 내용**: `JpaPagingItemReader` 한계 분석, 커버링 인덱스 적용 전후 실행 계획(Explain) 비교, 멀티 스레드 vs 파티셔닝 비교
+
+<br>
+
 ### **[ 파티셔닝 아키텍처 구조도 ]**
 
 <img width="100%" alt="Partitioning Architecture" src="https://github.com/user-attachments/assets/0d74dd20-e17a-4dcd-ab02-d39a4c51d9d6" />
+
+
 
 <br><br>
 
