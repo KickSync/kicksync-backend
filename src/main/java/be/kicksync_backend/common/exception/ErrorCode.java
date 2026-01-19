@@ -19,6 +19,7 @@ public enum ErrorCode {
     ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 관리자를 찾을 수 없습니다."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 존재하는 닉네임입니다."),
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "닉네임은 공백만으로 지정할 수 없습니다."),
+    INVALID_USERNAME_PATTERN(HttpStatus.BAD_REQUEST, "아이디 형식이 올바르지 않습니다."),
     UNAUTHORIZED_SUBSCRIBE(HttpStatus.FORBIDDEN, "구독 권한을 확인할 수 없습니다."),
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
     UNAUTHORIZED_ACTION(HttpStatus.FORBIDDEN, "이 작업을 수행할 권한이 없습니다."),
