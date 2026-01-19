@@ -194,7 +194,7 @@ public class SettlementJobConfig {
 
     @Bean
     @StepScope
-    public ItemProcessor<PartnerSettlementDto, Settlement> settlementItemProcessor(
+    public SettlementItemProcessor settlementItemProcessor(
             @Value("#{jobParameters['settlementDate'] ?: null}") String settlementDateStr,
             @Value("#{jobParameters['startDate'] ?: null}") String startDateStr,
             @Value("#{jobParameters['endDate'] ?: null}") String endDateStr) {

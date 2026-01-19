@@ -16,6 +16,7 @@ spring:
       enabled: false
 
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: update
     properties:
