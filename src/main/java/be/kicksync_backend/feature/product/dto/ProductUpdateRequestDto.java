@@ -2,6 +2,8 @@ package be.kicksync_backend.feature.product.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,7 +11,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class ProductUpdateRequestDto {
     @Schema(description = "상품명", example = "Updated Kicks")
     @NotBlank(message = "상품명은 필수 항목입니다.")

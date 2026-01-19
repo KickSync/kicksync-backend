@@ -11,7 +11,6 @@ import be.kicksync_backend.feature.payment.entity.PaymentStatus;
 import be.kicksync_backend.feature.payment.repository.PaymentRepository;
 import be.kicksync_backend.feature.payment.util.PaymentClient;
 import be.kicksync_backend.feature.user.entity.User;
-import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.response.IamportResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -99,13 +97,13 @@ class PaymentServiceTest {
     void verifyPayment_Success() throws Exception {
         // given
         String impUid = "imp_123456";
-        Long orderId = 1L;
+        String merchantUid = "merchant_123456";
         Long userId = 1L;
         BigDecimal amount = BigDecimal.valueOf(10000);
         
         PaymentRequestDto requestDto = PaymentRequestDto.builder()
                 .impUid(impUid)
-                .orderId(orderId)
+                .merchantUid(merchantUid)
                 .build();
 
         // 1. Repo: 기존 결제 내역 없음
@@ -119,29 +117,28 @@ class PaymentServiceTest {
         given(iamportResponse.getResponse()).willReturn(paymentInfo);
         
         given(paymentInfo.getAmount()).willReturn(amount);
-        given(paymentInfo.getMerchantUid()).willReturn(String.valueOf(orderId));
+        given(paymentInfo.getMerchantUid()).willReturn(merchantUid);
         given(paymentInfo.getStatus()).willReturn("paid");
 
         // 3. Order Validation
         Order order = mock(Order.class);
         User user = mock(User.class);
         
-        given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+        given(orderRepository.findAllByMerchantUid(merchantUid)).willReturn(java.util.List.of(order));
         given(order.getUser()).willReturn(user);
         given(user.getId()).willReturn(userId);
         given(order.getStatus()).willReturn(OrderStatus.PENDING_PAYMENT);
         given(order.getFinalPrice()).willReturn(amount);
-        given(order.getId()).willReturn(orderId);
 
         // 4. Transaction Service
         Payment payment = mock(Payment.class);
-        given(paymentTransactionService.completePaymentVerification(paymentInfo, order)).willReturn(payment);
+        given(paymentTransactionService.completePaymentVerification(eq(paymentInfo), anyList())).willReturn(payment);
 
         // when
         Payment result = paymentService.verifyPayment(requestDto, userId);
 
         // then
         assertThat(result).isEqualTo(payment);
-        verify(paymentTransactionService).completePaymentVerification(paymentInfo, order);
+        verify(paymentTransactionService).completePaymentVerification(eq(paymentInfo), anyList());
     }
 }

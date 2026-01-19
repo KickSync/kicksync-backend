@@ -1,7 +1,11 @@
 package be.kicksync_backend.feature.user.controller;
 
+import be.kicksync_backend.feature.order.entity.Address;
 import be.kicksync_backend.feature.order.entity.Order;
+import be.kicksync_backend.feature.order.entity.OrderItem;
 import be.kicksync_backend.feature.order.repository.OrderRepository;
+import be.kicksync_backend.feature.partner.entity.Partner;
+import be.kicksync_backend.feature.partner.repository.PartnerRepository;
 import be.kicksync_backend.feature.payment.repository.PaymentRepository;
 import be.kicksync_backend.feature.product.entity.Product;
 import be.kicksync_backend.feature.product.repository.ProductRepository;
@@ -65,6 +69,9 @@ class MyPageControllerTest {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    @Autowired
+    private PartnerRepository partnerRepository;
+
     private User testUser;
 
     @BeforeEach
@@ -74,10 +81,18 @@ class MyPageControllerTest {
         productRepository.deleteAll();
         refreshTokenRepository.deleteAll();
         userRepository.deleteAll();
+        partnerRepository.deleteAll();
 
         String uniqueUsername = "mypage_user_" + System.nanoTime();
         testUser = new User(uniqueUsername, passwordEncoder.encode("password123!"));
         userRepository.saveAndFlush(testUser);
+
+       Partner partner = Partner.builder()
+                .name("Test Partner")
+                .businessNumber("123-45-67890")
+                .commissionRate(BigDecimal.ZERO)
+                .build();
+        partnerRepository.saveAndFlush(partner);
 
         Product testProduct = Product.builder()
                 .name("Test Product")
@@ -85,12 +100,12 @@ class MyPageControllerTest {
                 .releaseDate(LocalDate.now())
                 .retailPrice(BigDecimal.valueOf(100000))
                 .stock(10)
-                .partnerId(1L)
+                .partner(partner)
                 .build();
         productRepository.saveAndFlush(testProduct);
 
-        be.kicksync_backend.feature.order.entity.Address address = new be.kicksync_backend.feature.order.entity.Address("12345", "Street", "Detail");
-        be.kicksync_backend.feature.order.entity.OrderItem orderItem = be.kicksync_backend.feature.order.entity.OrderItem.builder()
+        Address address = new Address("12345", "Street", "Detail");
+        OrderItem orderItem = OrderItem.builder()
                 .product(testProduct)
                 .quantity(1)
                 .orderPrice(testProduct.getRetailPrice())
@@ -103,6 +118,8 @@ class MyPageControllerTest {
                 .receiverPhone("010-1234-5678")
                 .requestMessage("Message")
                 .orderItems(java.util.List.of(orderItem))
+                .partnerId(testProduct.getPartner().getId())
+                .merchantUid("merchant_" + System.nanoTime())
                 .build();
         orderRepository.saveAndFlush(testOrder);
     }

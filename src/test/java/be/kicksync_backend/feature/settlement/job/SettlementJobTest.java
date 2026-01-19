@@ -1,6 +1,9 @@
 package be.kicksync_backend.feature.settlement.job;
 
 import be.kicksync_backend.feature.batch.SettlementJobConfig;
+import be.kicksync_backend.feature.order.entity.OrderItem;
+import be.kicksync_backend.feature.partner.entity.Partner;
+import be.kicksync_backend.feature.partner.repository.PartnerRepository;
 import be.kicksync_backend.feature.payment.entity.Payment;
 import be.kicksync_backend.feature.payment.entity.PaymentStatus;
 import be.kicksync_backend.feature.payment.repository.PaymentRepository;
@@ -74,12 +77,16 @@ class SettlementJobTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private PartnerRepository partnerRepository;
+
     @BeforeEach
     void setUp() {
         settlementRepository.deleteAll();
         paymentRepository.deleteAll();
         orderRepository.deleteAll();
         productRepository.deleteAll();
+        partnerRepository.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -90,13 +97,19 @@ class SettlementJobTest {
         User user = new User("settlementUser", passwordEncoder.encode("password"));
         userRepository.saveAndFlush(user);
 
+        Partner partner1 = Partner.builder().name("P1").businessNumber("1").commissionRate(BigDecimal.ZERO).build();
+        partnerRepository.save(partner1);
+        
+        Partner partner2 = Partner.builder().name("P2").businessNumber("2").commissionRate(BigDecimal.ZERO).build();
+        partnerRepository.save(partner2);
+
         // Partner 1: Total 30000
-        createPayment(user, 1L, 10000, PaymentStatus.PAID);
-        createPayment(user, 1L, 20000, PaymentStatus.PAID);
+        createPayment(user, partner1, 10000, PaymentStatus.PAID);
+        createPayment(user, partner1, 20000, PaymentStatus.PAID);
 
         // Partner 2: Total 5000 (10000 Paid - 5000 Cancelled)
-        createPayment(user, 2L, 10000, PaymentStatus.PAID);
-        createPayment(user, 2L, 5000, PaymentStatus.CANCELLED);
+        createPayment(user, partner2, 10000, PaymentStatus.PAID);
+        createPayment(user, partner2, 5000, PaymentStatus.CANCELLED);
 
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("settlementDate", LocalDate.now().toString())
@@ -111,23 +124,33 @@ class SettlementJobTest {
         List<Settlement> settlements = settlementRepository.findAll();
         assertThat(settlements).hasSize(2);
 
-        Settlement s1 = settlements.stream().filter(s -> s.getPartnerId() == 1L).findFirst().orElseThrow();
+        Settlement s1 = settlements.stream().filter(s -> s.getPartnerId().equals(partner1.getId())).findFirst().orElseThrow();
         assertThat(s1.getTotalAmount()).isEqualByComparingTo(BigDecimal.valueOf(30000));
 
-        Settlement s2 = settlements.stream().filter(s -> s.getPartnerId() == 2L).findFirst().orElseThrow();
+        Settlement s2 = settlements.stream().filter(s -> s.getPartnerId().equals(partner2.getId())).findFirst().orElseThrow();
         assertThat(s2.getTotalAmount()).isEqualByComparingTo(BigDecimal.valueOf(5000));
     }
 
-    private void createPayment(User user, Long partnerId, int amount, PaymentStatus status) {
+    private void createPayment(User user, Partner partner, int amount, PaymentStatus status) {
+        String merchantUid = "merchant_" + System.nanoTime();
+        
         Product product = Product.builder()
                 .name("Product")
                 .model("Model_" + System.nanoTime())
                 .releaseDate(LocalDate.now())
                 .retailPrice(BigDecimal.valueOf(amount))
                 .stock(10)
-                .partnerId(partnerId)
+                .partner(partner)
                 .build();
         productRepository.save(product);
+
+        OrderItem orderItem = OrderItem.builder()
+                .product(product)
+                .quantity(1)
+                .orderPrice(BigDecimal.valueOf(amount))
+                .build();
+        List<OrderItem> orderItems = new ArrayList<>();
+        orderItems.add(orderItem);
 
         Order order = Order.builder()
                 .user(user)
@@ -135,8 +158,22 @@ class SettlementJobTest {
                 .receiverName("Receiver")
                 .receiverPhone("010-1234-5678")
                 .requestMessage("Msg")
-                .orderItems(new ArrayList<>())
+                .orderItems(orderItems)
+                .partnerId(partner.getId())
+                .merchantUid(merchantUid)
                 .build();
+        orderRepository.save(order);
+        
+        if (status == PaymentStatus.PAID) {
+            try {
+                order.processPaymentSuccess();
+            } catch (Exception e) {}
+        } else if (status == PaymentStatus.CANCELLED) {
+             try {
+                order.processPaymentSuccess();
+                order.cancel();
+             } catch (Exception e) {}
+        }
         orderRepository.save(order);
 
         Payment payment = Payment.builder()
@@ -145,13 +182,11 @@ class SettlementJobTest {
                 .pgProvider("PG")
                 .pgType("TYPE")
                 .impUid("imp_" + System.nanoTime())
-                .merchantUid("merchant_" + System.nanoTime())
+                .merchantUid(merchantUid)
                 .pgTid("pg_" + System.nanoTime())
                 .status(status == PaymentStatus.CANCELLED ? PaymentStatus.PAID : status)
                 .paymentDate(LocalDateTime.now())
                 .user(user)
-                .order(order)
-                .partnerId(partnerId)
                 .build();
         
         if (status == PaymentStatus.CANCELLED) {
