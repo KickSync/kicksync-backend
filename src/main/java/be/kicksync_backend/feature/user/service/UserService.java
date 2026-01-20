@@ -36,6 +36,10 @@ public class UserService implements UserDetailsService {
 
     public UserResponseDto signup(UserSignupRequestDto requestDto) {
 
+        if (requestDto.getUsername().startsWith("pt_")) {
+            throw new CustomException(ErrorCode.INVALID_USERNAME_PATTERN);
+        }
+
         if (userRepository.findByUsername(requestDto.getUsername()).isPresent()) {
             throw new CustomException(ErrorCode.USER_ALREADY_EXISTS);
         }

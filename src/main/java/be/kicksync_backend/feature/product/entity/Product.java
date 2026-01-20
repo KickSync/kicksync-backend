@@ -4,6 +4,7 @@ import be.kicksync_backend.common.entity.BaseTimeEntity;
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.feature.order.entity.OrderItem;
+import be.kicksync_backend.feature.partner.entity.Partner;
 import jakarta.persistence.*;
 
 import lombok.*;
@@ -39,8 +40,9 @@ public class Product extends BaseTimeEntity {
     @Column(nullable = false)
     private Integer stock;
 
-    @Column(name = "partner_id", nullable = false)
-    private Long partnerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "partner_id", nullable = false)
+    private Partner partner;
 
     @Builder.Default
     @OneToMany(mappedBy = "product")
@@ -50,11 +52,12 @@ public class Product extends BaseTimeEntity {
     @OneToMany(mappedBy = "product")
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    public void update(String name, String model, LocalDate releaseDate, BigDecimal retailPrice) {
+    public void update(String name, String model, LocalDate releaseDate, BigDecimal retailPrice, Integer stock) {
         this.name = name != null ? name.trim() : null;
         this.model = model != null ? model.trim() : null;
         this.releaseDate = releaseDate;
         this.retailPrice = retailPrice;
+        this.stock = stock;
     }
 
     public void decreaseStock(Integer quantity) {

@@ -9,6 +9,8 @@ import be.kicksync_backend.feature.order.entity.Order;
 import be.kicksync_backend.feature.order.entity.OrderStatus;
 import be.kicksync_backend.feature.order.repository.OrderItemRepository;
 import be.kicksync_backend.feature.order.repository.OrderRepository;
+import be.kicksync_backend.feature.partner.entity.Partner;
+import be.kicksync_backend.feature.partner.repository.PartnerRepository;
 import be.kicksync_backend.feature.payment.repository.PaymentRepository;
 import be.kicksync_backend.feature.payment.service.PaymentService;
 import be.kicksync_backend.feature.product.entity.Product;
@@ -67,16 +69,27 @@ class OrderFacadeTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private PartnerRepository partnerRepository;
+
     @MockitoBean
     private PaymentService paymentService;
 
     private User testUser;
     private Product product1;
     private Product product2;
+    private Partner partner;
 
     @BeforeEach
     void setUp() {
         cleanUp();
+
+        partner = Partner.builder()
+                .name("Test Partner")
+                .businessNumber("123-45-67890")
+                .commissionRate(BigDecimal.valueOf(0.05))
+                .build();
+        partnerRepository.saveAndFlush(partner);
 
         testUser = new User("facadeUser", passwordEncoder.encode("password"));
         userRepository.saveAndFlush(testUser);
@@ -87,7 +100,7 @@ class OrderFacadeTest {
                 .releaseDate(LocalDate.now())
                 .retailPrice(BigDecimal.valueOf(10000))
                 .stock(100)
-                .partnerId(1L)
+                .partner(partner)
                 .build();
         productRepository.saveAndFlush(product1);
 
@@ -97,7 +110,7 @@ class OrderFacadeTest {
                 .releaseDate(LocalDate.now())
                 .retailPrice(BigDecimal.valueOf(20000))
                 .stock(100)
-                .partnerId(1L)
+                .partner(partner)
                 .build();
         productRepository.saveAndFlush(product2);
     }
@@ -113,6 +126,7 @@ class OrderFacadeTest {
             orderItemRepository.deleteAllInBatch();
             orderRepository.deleteAllInBatch();
             productRepository.deleteAllInBatch();
+            partnerRepository.deleteAllInBatch();
             userRepository.deleteAllInBatch();
         } catch (Exception e) {
             e.printStackTrace();
@@ -133,7 +147,8 @@ class OrderFacadeTest {
                 .address(new AddressDto("12345", "Seoul", "Gangnam"))
                 .build();
 
-        OrderResponseDto orderResponse = orderFacade.createOrderWithLock(createDto, testUser.getId());
+        List<OrderResponseDto> orderResponses = orderFacade.createOrderWithLock(createDto, testUser.getId());
+        OrderResponseDto orderResponse = orderResponses.get(0);
         Long orderId = orderResponse.getOrderId();
 
         // createOrder가 PENDING_PAYMENT로 설정하므로 PAYMENT_COMPLETED 상태를 수동으로 시뮬레이션

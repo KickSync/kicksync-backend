@@ -26,7 +26,7 @@ public class PartnerIdRangePartitioner implements Partitioner {
 
     @Override
     public Map<String, ExecutionContext> partition(int gridSize) {
-        String query = "SELECT MIN(partner_id), MAX(partner_id) FROM payments WHERE status = 'PAID' AND payment_date BETWEEN ? AND ?";
+        String query = "SELECT MIN(partner_id), MAX(partner_id) FROM orders WHERE order_date BETWEEN ? AND ?";
 
         Map<String, ExecutionContext> result = new HashMap<>();
 

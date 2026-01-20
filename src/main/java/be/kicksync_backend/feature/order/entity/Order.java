@@ -1,9 +1,9 @@
 package be.kicksync_backend.feature.order.entity;
 
+import be.kicksync_backend.common.entity.Address;
 import be.kicksync_backend.common.entity.BaseTimeEntity;
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
-import be.kicksync_backend.feature.payment.entity.Payment;
 import be.kicksync_backend.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,7 +15,6 @@ import java.util.List;
 
 @Entity
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "orders")
@@ -50,15 +49,17 @@ public class Order extends BaseTimeEntity {
 
     private String requestMessage;
 
-    @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
-    private Payment payment;
+    @Column(nullable = false)
+    private Long partnerId;
+
+    @Column(nullable = false)
+    private String merchantUid;
 
     @Builder
-    public Order(User user, Address address, String receiverName, String receiverPhone, String requestMessage, List<OrderItem> orderItems) {
+    public Order(User user, Address address, String receiverName, String receiverPhone, String requestMessage, List<OrderItem> orderItems, Long partnerId, String merchantUid) {
         this.user = user;
         this.address = address;
         this.receiverName = receiverName;
@@ -66,6 +67,8 @@ public class Order extends BaseTimeEntity {
         this.requestMessage = requestMessage;
         this.orderDate = LocalDateTime.now();
         this.status = OrderStatus.PENDING_PAYMENT;
+        this.partnerId = partnerId;
+        this.merchantUid = merchantUid;
         orderItems.forEach(this::addOrderItem);
         this.finalPrice = calculateTotalPrice();
     }

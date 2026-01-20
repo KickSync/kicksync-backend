@@ -6,6 +6,8 @@ import be.kicksync_backend.feature.order.dto.OrderCreateRequestDto;
 import be.kicksync_backend.feature.order.dto.OrderItemRequestDto;
 import be.kicksync_backend.feature.order.repository.OrderItemRepository;
 import be.kicksync_backend.feature.order.repository.OrderRepository;
+import be.kicksync_backend.feature.partner.entity.Partner;
+import be.kicksync_backend.feature.partner.repository.PartnerRepository;
 import be.kicksync_backend.feature.product.entity.Product;
 import be.kicksync_backend.feature.product.repository.ProductRepository;
 import be.kicksync_backend.feature.user.entity.User;
@@ -51,18 +53,29 @@ public class OrderServiceConcurrencyTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private PartnerRepository partnerRepository;
+
     private Product testProduct;
     private User testUser;
+    private Partner testPartner;
 
     @BeforeEach
     void setUp() {
+        testPartner = Partner.builder()
+                .name("Test Partner")
+                .businessNumber("123-45-67890")
+                .commissionRate(BigDecimal.valueOf(0.05))
+                .build();
+        partnerRepository.saveAndFlush(testPartner);
+
         testProduct = Product.builder()
                 .name("한정판 신발")
                 .model("KS-2024-LE")
                 .releaseDate(LocalDate.now())
                 .retailPrice(BigDecimal.valueOf(300000))
                 .stock(1)
-                .partnerId(1L)
+                .partner(testPartner)
                 .build();
         productRepository.saveAndFlush(testProduct);
 
@@ -75,6 +88,7 @@ public class OrderServiceConcurrencyTest {
         orderItemRepository.deleteAll();
         orderRepository.deleteAll();
         productRepository.deleteAll();
+        partnerRepository.deleteAll();
         userRepository.deleteAll();
     }
 

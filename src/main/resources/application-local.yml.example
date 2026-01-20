@@ -1,0 +1,44 @@
+# ===================================================================
+#      로컬 개발 환경 전용 설정 (절대 실제 키를 여기에 넣지 마세요)
+# ===================================================================
+#
+# 이 파일을 복사하여 application-local.yml을 만들고,
+# 본인의 로컬 환경에 맞게 값을 채워넣어 사용하세요.
+
+spring:
+  # 로컬 MySQL 데이터베이스 설정
+  datasource:
+    url: jdbc:mysql://localhost:3306/kicksync
+    username: root
+    password: YOUR_LOCAL_DB_PASSWORD # 로컬 DB 비밀번호를 입력하세요.
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+jwt:
+  secret:
+    # 64바이트 이상의 매우 긴 무작위 문자열을 권장합니다.
+    key: YOUR_LOCAL_JWT_SECRET_KEY_64_BYTES_OR_MORE
+  access:
+    expiration: 3600000 # 1 hour
+  refresh:
+    expiration: 86400000 # 1 day
+
+# 아임포트 결제 API 설정
+iamport:
+  api:
+    key: YOUR_IAMPORT_API_KEY
+    secret: YOUR_IAMPORT_API_SECRET
+
+# 토스페이먼츠 API 설정
+toss:
+  api:
+    # 테스트용 API 키 (sk_test_...)
+    key: YOUR_TOSS_TEST_API_KEY

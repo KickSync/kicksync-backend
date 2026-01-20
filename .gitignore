@@ -35,4 +35,10 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Local-specific configurations ###
+/gradle.properties
+/src/main/resources/application-local.yml
+/src/test/resources/application.yml
+
 .DS_Store

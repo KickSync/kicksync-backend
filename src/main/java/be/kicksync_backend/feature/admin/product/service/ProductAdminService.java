@@ -17,6 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import be.kicksync_backend.feature.partner.entity.Partner;
+import be.kicksync_backend.feature.partner.repository.PartnerRepository;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -25,10 +28,14 @@ public class ProductAdminService {
     private final ProductQueryService productQueryService;
     private final OrderItemRepository orderItemRepository;
     private final DropEventRepository dropEventRepository;
+    private final PartnerRepository partnerRepository;
 
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponseDto createProduct(ProductCreateRequestDto requestDto) {
-        Product product = requestDto.toEntity();
+        Partner partner = partnerRepository.findById(requestDto.getPartnerId())
+                .orElseThrow(() -> new CustomException(ErrorCode.PARTNER_NOT_FOUND));
+        
+        Product product = requestDto.toEntity(partner);
         Product savedProduct = productRepository.save(product);
         return new ProductResponseDto(savedProduct);
     }
@@ -48,7 +55,13 @@ public class ProductAdminService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        product.update(requestDto.getName(), requestDto.getModel(), requestDto.getReleaseDate(), requestDto.getRetailPrice());
+        product.update(
+                requestDto.getName(), 
+                requestDto.getModel(), 
+                requestDto.getReleaseDate(), 
+                requestDto.getRetailPrice(),
+                requestDto.getStock()
+        );
         return new ProductResponseDto(product);
     }
 
@@ -63,4 +76,4 @@ public class ProductAdminService {
 
         productRepository.delete(product);
     }
-} 
+}
