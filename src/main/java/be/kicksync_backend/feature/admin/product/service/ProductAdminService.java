@@ -55,7 +55,13 @@ public class ProductAdminService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        product.update(requestDto.getName(), requestDto.getModel(), requestDto.getReleaseDate(), requestDto.getRetailPrice());
+        product.update(
+                requestDto.getName(), 
+                requestDto.getModel(), 
+                requestDto.getReleaseDate(), 
+                requestDto.getRetailPrice(),
+                requestDto.getStock()
+        );
         return new ProductResponseDto(product);
     }
 
@@ -70,4 +76,4 @@ public class ProductAdminService {
 
         productRepository.delete(product);
     }
-} 
+}

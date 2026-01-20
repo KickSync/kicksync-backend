@@ -34,4 +34,9 @@ public class ProductUpdateRequestDto {
     @NotNull(message = "소매가는 필수 항목입니다.")
     @Positive(message = "소매가는 0보다 커야 합니다.")
     private BigDecimal retailPrice;
+
+    @Schema(description = "재고 수량", example = "150")
+    @NotNull(message = "재고 수량은 필수입니다.")
+    @Min(value = 0, message = "재고는 0개 이상이어야 합니다.")
+    private Integer stock;
 }

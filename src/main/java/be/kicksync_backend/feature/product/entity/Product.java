@@ -52,11 +52,12 @@ public class Product extends BaseTimeEntity {
     @OneToMany(mappedBy = "product")
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    public void update(String name, String model, LocalDate releaseDate, BigDecimal retailPrice) {
+    public void update(String name, String model, LocalDate releaseDate, BigDecimal retailPrice, Integer stock) {
         this.name = name != null ? name.trim() : null;
         this.model = model != null ? model.trim() : null;
         this.releaseDate = releaseDate;
         this.retailPrice = retailPrice;
+        this.stock = stock;
     }
 
     public void decreaseStock(Integer quantity) {
