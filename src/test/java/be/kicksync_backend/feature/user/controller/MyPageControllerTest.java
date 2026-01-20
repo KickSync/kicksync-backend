@@ -1,6 +1,6 @@
 package be.kicksync_backend.feature.user.controller;
 
-import be.kicksync_backend.feature.order.entity.Address;
+import be.kicksync_backend.common.entity.Address;
 import be.kicksync_backend.feature.order.entity.Order;
 import be.kicksync_backend.feature.order.entity.OrderItem;
 import be.kicksync_backend.feature.order.repository.OrderRepository;

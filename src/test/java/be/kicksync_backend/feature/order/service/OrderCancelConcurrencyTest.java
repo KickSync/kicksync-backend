@@ -9,6 +9,7 @@ import be.kicksync_backend.feature.product.entity.Product;
 import be.kicksync_backend.feature.product.repository.ProductRepository;
 import be.kicksync_backend.feature.user.entity.User;
 import be.kicksync_backend.feature.user.repository.UserRepository;
+import be.kicksync_backend.common.entity.Address;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -98,7 +99,7 @@ public class OrderCancelConcurrencyTest {
                     .user(testUser)
                     .receiverName("Receiver " + i)
                     .receiverPhone("010-0000-0000")
-                    .address(new be.kicksync_backend.feature.order.entity.Address("12345", "Seoul", "Gangnam"))
+                    .address(new Address("12345", "Seoul", "Gangnam"))
                     .orderItems(List.of(item))
                     .partnerId(testPartner.getId())
                     .merchantUid("merchant_" + i)

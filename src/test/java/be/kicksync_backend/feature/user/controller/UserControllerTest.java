@@ -1,20 +1,19 @@
 package be.kicksync_backend.feature.user.controller;
 
-import be.kicksync_backend.common.config.JwtAuthenticationFilter;
 import be.kicksync_backend.common.config.SecurityConfig;
 import be.kicksync_backend.common.dto.JwtResponseDto;
 import be.kicksync_backend.common.dto.ResponseText;
 import be.kicksync_backend.common.security.UserDetailsImpl;
+import be.kicksync_backend.common.security.jwt.JwtAccessDeniedHandler;
+import be.kicksync_backend.common.security.jwt.JwtAuthenticationEntryPoint;
+import be.kicksync_backend.common.service.RedisTokenService;
+import be.kicksync_backend.common.util.JwtUtil;
 import be.kicksync_backend.feature.user.dto.UserLoginRequestDto;
 import be.kicksync_backend.feature.user.dto.UserResponseDto;
 import be.kicksync_backend.feature.user.dto.UserSignupRequestDto;
 import be.kicksync_backend.feature.user.entity.User;
 import be.kicksync_backend.feature.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -50,16 +48,16 @@ class UserControllerTest {
     private UserService userService;
 
     @MockitoBean
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private JwtUtil jwtUtil;
 
-    @BeforeEach
-    void setUp() throws Exception {
-        doAnswer(invocation -> {
-            FilterChain chain = invocation.getArgument(2);
-            chain.doFilter(invocation.getArgument(0), invocation.getArgument(1));
-            return null;
-        }).when(jwtAuthenticationFilter).doFilter(any(HttpServletRequest.class), any(HttpServletResponse.class), any(FilterChain.class));
-    }
+    @MockitoBean
+    private RedisTokenService redisTokenService;
+
+    @MockitoBean
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    @MockitoBean
+    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     @Test
     @DisplayName("회원가입 성공 테스트")

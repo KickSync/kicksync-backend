@@ -15,7 +15,7 @@ import be.kicksync_backend.feature.user.entity.User;
 import be.kicksync_backend.feature.user.repository.UserRepository;
 import be.kicksync_backend.feature.order.entity.Order;
 import be.kicksync_backend.feature.order.repository.OrderRepository;
-import be.kicksync_backend.feature.order.entity.Address;
+import be.kicksync_backend.common.entity.Address;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

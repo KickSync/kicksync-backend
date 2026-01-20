@@ -2,6 +2,8 @@ package be.kicksync_backend.feature.order.controller;
 
 import be.kicksync_backend.common.config.SecurityConfig;
 import be.kicksync_backend.common.security.UserDetailsImpl;
+import be.kicksync_backend.common.security.jwt.JwtAccessDeniedHandler;
+import be.kicksync_backend.common.security.jwt.JwtAuthenticationEntryPoint;
 import be.kicksync_backend.common.service.RedisTokenService;
 import be.kicksync_backend.common.util.JwtUtil;
 import be.kicksync_backend.feature.order.dto.AddressDto;
@@ -60,6 +62,12 @@ class OrderControllerTest {
 
     @MockitoBean
     private RedisTokenService redisTokenService;
+
+    @MockitoBean
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    @MockitoBean
+    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     private User testUser;
 

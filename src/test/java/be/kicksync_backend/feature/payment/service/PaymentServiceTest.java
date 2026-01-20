@@ -6,6 +6,7 @@ import be.kicksync_backend.feature.order.entity.Order;
 import be.kicksync_backend.feature.order.entity.OrderStatus;
 import be.kicksync_backend.feature.order.repository.OrderRepository;
 import be.kicksync_backend.feature.payment.dto.PaymentRequestDto;
+import be.kicksync_backend.feature.payment.dto.PaymentResponseDto;
 import be.kicksync_backend.feature.payment.entity.Payment;
 import be.kicksync_backend.feature.payment.entity.PaymentStatus;
 import be.kicksync_backend.feature.payment.repository.PaymentRepository;
@@ -59,14 +60,20 @@ class PaymentServiceTest {
 
         Payment existingPayment = mock(Payment.class);
         given(existingPayment.getStatus()).willReturn(PaymentStatus.PAID);
+        given(existingPayment.getId()).willReturn(1L);
+        given(existingPayment.getMerchantUid()).willReturn("merchant_123");
+        given(existingPayment.getPaymentAmount()).willReturn(BigDecimal.valueOf(10000));
+        given(existingPayment.getPaymentDate()).willReturn(java.time.LocalDateTime.now());
+        given(existingPayment.getPaymentMethod()).willReturn("card");
+        given(existingPayment.getCardName()).willReturn("cardName");
 
         given(paymentRepository.findByImpUid(impUid)).willReturn(Optional.of(existingPayment));
 
         // when
-        Payment result = paymentService.verifyPayment(requestDto, userId);
+        PaymentResponseDto result = paymentService.verifyPayment(requestDto, userId);
 
         // then
-        assertThat(result).isEqualTo(existingPayment);
+        assertThat(result.getPaymentId()).isEqualTo(existingPayment.getId());
         verify(paymentClient, never()).getPaymentInfoByImpUid(any());
     }
 
@@ -98,6 +105,7 @@ class PaymentServiceTest {
         // given
         String impUid = "imp_123456";
         String merchantUid = "merchant_123456";
+        Long orderId = 1L;
         Long userId = 1L;
         BigDecimal amount = BigDecimal.valueOf(10000);
         
@@ -132,13 +140,21 @@ class PaymentServiceTest {
 
         // 4. Transaction Service
         Payment payment = mock(Payment.class);
+        given(payment.getId()).willReturn(1L);
+        given(payment.getMerchantUid()).willReturn(merchantUid);
+        given(payment.getPaymentAmount()).willReturn(amount);
+        given(payment.getPaymentDate()).willReturn(java.time.LocalDateTime.now());
+        given(payment.getPaymentMethod()).willReturn("card");
+        given(payment.getStatus()).willReturn(PaymentStatus.PAID);
+        given(payment.getCardName()).willReturn("cardName");
+
         given(paymentTransactionService.completePaymentVerification(eq(paymentInfo), anyList())).willReturn(payment);
 
         // when
-        Payment result = paymentService.verifyPayment(requestDto, userId);
+        PaymentResponseDto result = paymentService.verifyPayment(requestDto, userId);
 
         // then
-        assertThat(result).isEqualTo(payment);
+        assertThat(result.getPaymentId()).isEqualTo(payment.getId());
         verify(paymentTransactionService).completePaymentVerification(eq(paymentInfo), anyList());
     }
 }

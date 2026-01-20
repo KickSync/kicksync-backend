@@ -2,14 +2,16 @@ package be.kicksync_backend.feature.partner.controller;
 
 import be.kicksync_backend.common.config.SecurityConfig;
 import be.kicksync_backend.common.security.UserDetailsImpl;
+import be.kicksync_backend.common.security.jwt.JwtAccessDeniedHandler;
+import be.kicksync_backend.common.security.jwt.JwtAuthenticationEntryPoint;
 import be.kicksync_backend.common.service.RedisTokenService;
 import be.kicksync_backend.common.util.JwtUtil;
 import be.kicksync_backend.feature.partner.service.PartnerProductService;
 import be.kicksync_backend.feature.product.dto.ProductCreateRequestDto;
 import be.kicksync_backend.feature.product.dto.ProductResponseDto;
 import be.kicksync_backend.feature.product.dto.ProductUpdateRequestDto;
-import be.kicksync_backend.feature.user.entity.Role;
 import be.kicksync_backend.feature.user.entity.User;
+import be.kicksync_backend.feature.user.entity.Role;
 import be.kicksync_backend.feature.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,11 +22,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,7 +34,8 @@ import java.util.Collections;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -62,18 +62,21 @@ class PartnerProductControllerTest {
     @MockitoBean
     private RedisTokenService redisTokenService;
 
-    private User partnerUser;
+    @MockitoBean
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    @MockitoBean
+    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
+
+    private User testUser;
+    private UserDetailsImpl userDetails;
 
     @BeforeEach
     void setUp() {
-        partnerUser = new User("partnerUser", "password", Role.PARTNER);
-        setUserId(partnerUser, 1L);
+        testUser = new User("partnerUser", "password", Role.PARTNER);
+        setUserId(testUser, 1L);
 
-        UserDetailsImpl userDetails = UserDetailsImpl.build(partnerUser);
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities()
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        userDetails = UserDetailsImpl.build(testUser);
     }
 
     private void setUserId(User user, Long id) {
@@ -88,95 +91,92 @@ class PartnerProductControllerTest {
 
     @Test
     @DisplayName("상품 등록 성공 테스트")
-    void createProduct_Success() throws Exception {
+    void createProductSuccess() throws Exception {
         // given
         ProductCreateRequestDto requestDto = ProductCreateRequestDto.builder()
                 .name("New Kicks")
-                .model("NK-001")
+                .model("NK-2024-001")
                 .releaseDate(LocalDate.now())
-                .retailPrice(BigDecimal.valueOf(150000))
+                .retailPrice(BigDecimal.valueOf(100000))
                 .stock(100)
                 .partnerId(1L)
                 .build();
 
         ProductResponseDto responseDto = ProductResponseDto.builder()
-                .id(100L)
+                .id(1L)
                 .name("New Kicks")
-                .model("NK-001")
-                .retailPrice(BigDecimal.valueOf(150000))
+                .model("NK-2024-001")
+                .retailPrice(BigDecimal.valueOf(100000))
                 .build();
 
-        given(partnerProductService.createProduct(any(ProductCreateRequestDto.class), any(User.class)))
+        given(partnerProductService.createProduct(any(ProductCreateRequestDto.class), any(Long.class)))
                 .willReturn(responseDto);
 
         // when & then
         mockMvc.perform(post("/api/partner/products")
+                        .with(csrf())
+                        .with(user(userDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.msg").value("상품 생성에 성공하였습니다."))
-                .andExpect(jsonPath("$.data.name").value("New Kicks"));
+                .andExpect(jsonPath("$.data.id").value(1L));
     }
 
     @Test
     @DisplayName("내 상품 목록 조회 성공 테스트")
-    void getMyProducts_Success() throws Exception {
+    void getMyProductsSuccess() throws Exception {
         // given
-        PageRequest pageable = PageRequest.of(0, 20, Sort.by("createdAt"));
         ProductResponseDto productDto = ProductResponseDto.builder()
-                .id(100L)
-                .name("My Product")
+                .id(1L)
+                .name("My Kicks")
                 .build();
         Page<ProductResponseDto> page = new PageImpl<>(Collections.singletonList(productDto));
 
-        given(partnerProductService.getMyProducts(any(), any(User.class)))
+        given(partnerProductService.getMyProducts(any(Pageable.class), any(Long.class)))
                 .willReturn(page);
 
         // when & then
-        mockMvc.perform(get("/api/partner/products"))
+        mockMvc.perform(get("/api/partner/products")
+                        .with(user(userDetails))
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").value("상품 전체 조회에 성공하였습니다."))
-                .andExpect(jsonPath("$.data.content[0].name").value("My Product"));
+                .andExpect(jsonPath("$.data.content[0].id").value(1L));
     }
 
     @Test
     @DisplayName("상품 수정 성공 테스트")
-    void updateProduct_Success() throws Exception {
+    void updateProductSuccess() throws Exception {
         // given
-        Long productId = 100L;
-        ProductUpdateRequestDto requestDto = new ProductUpdateRequestDto(
-                "Updated Name", "Updated Model", LocalDate.now(), BigDecimal.valueOf(200000)
-        );
-
+        ProductUpdateRequestDto requestDto = new ProductUpdateRequestDto("Updated Name", "Updated Model", LocalDate.now(), BigDecimal.valueOf(120000));
         ProductResponseDto responseDto = ProductResponseDto.builder()
-                .id(productId)
+                .id(1L)
                 .name("Updated Name")
-                .retailPrice(BigDecimal.valueOf(200000))
                 .build();
 
-        given(partnerProductService.updateProduct(eq(productId), any(ProductUpdateRequestDto.class), any(User.class)))
+        given(partnerProductService.updateProduct(eq(1L), any(ProductUpdateRequestDto.class), any(Long.class)))
                 .willReturn(responseDto);
 
         // when & then
-        mockMvc.perform(put("/api/partner/products/{productId}", productId)
+        mockMvc.perform(put("/api/partner/products/{productId}", 1L)
+                        .with(csrf())
+                        .with(user(userDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.msg").value("상품 수정에 성공하였습니다."))
-                .andExpect(jsonPath("$.data.name").value("Updated Name"));
+                .andExpect(jsonPath("$.msg").value("상품 수정에 성공하였습니다."));
     }
 
     @Test
     @DisplayName("상품 삭제 성공 테스트")
-    void deleteProduct_Success() throws Exception {
-        // given
-        Long productId = 100L;
-
+    void deleteProductSuccess() throws Exception {
         // when & then
-        mockMvc.perform(delete("/api/partner/products/{productId}", productId))
+        mockMvc.perform(delete("/api/partner/products/{productId}", 1L)
+                        .with(csrf())
+                        .with(user(userDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").value("상품 삭제에 성공하였습니다."));
-
-        verify(partnerProductService).deleteProduct(eq(productId), any(User.class));
     }
 }

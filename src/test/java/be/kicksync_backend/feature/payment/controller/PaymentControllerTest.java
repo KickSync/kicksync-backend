@@ -2,8 +2,11 @@ package be.kicksync_backend.feature.payment.controller;
 
 import be.kicksync_backend.common.config.SecurityConfig;
 import be.kicksync_backend.common.security.UserDetailsImpl;
+import be.kicksync_backend.common.security.jwt.JwtAccessDeniedHandler;
+import be.kicksync_backend.common.security.jwt.JwtAuthenticationEntryPoint;
 import be.kicksync_backend.common.service.RedisTokenService;
 import be.kicksync_backend.common.util.JwtUtil;
+import be.kicksync_backend.feature.payment.dto.PaymentResponseDto;
 import be.kicksync_backend.feature.payment.entity.Payment;
 import be.kicksync_backend.feature.payment.entity.PaymentStatus;
 import be.kicksync_backend.feature.payment.service.PaymentService;
@@ -48,6 +51,12 @@ public class PaymentControllerTest {
     @MockitoBean
     private RedisTokenService redisTokenService;
 
+    @MockitoBean
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    @MockitoBean
+    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
+
     private User testUser;
 
     @BeforeEach
@@ -90,7 +99,8 @@ public class PaymentControllerTest {
                 .user(testUser)
                 .build();
         
-        given(paymentService.getMyPayments(testUser.getId())).willReturn(Collections.singletonList(payment));
+        PaymentResponseDto responseDto = PaymentResponseDto.from(payment);
+        given(paymentService.getMyPayments(testUser.getId())).willReturn(Collections.singletonList(responseDto));
 
         // when & then
         mockMvc.perform(get("/api/payments"))
