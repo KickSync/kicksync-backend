@@ -23,20 +23,36 @@ public class Partner extends BaseTimeEntity {
     private String name;
 
     @Column(nullable = false, length = 20)
-    private String businessNumber;
+    private String businessNumber; // 사업자등록번호
 
     @Column(nullable = false, precision = 5, scale = 4)
-    private BigDecimal commissionRate; // 수수료
+    private BigDecimal commissionRate; // 수수료율
+
+    @Column(nullable = false, length = 100)
+    private String contactEmail; // 담당자 이메일
+
+    @Column(nullable = false, length = 50)
+    private String bankName; // 정산 은행
+
+    @Column(nullable = false, length = 50)
+    private String accountNumber; // 계좌 번호
+
+    @Column(nullable = false, length = 50)
+    private String accountHolder; // 예금주
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
     @Builder
-    public Partner(String name, String businessNumber, BigDecimal commissionRate, User user) {
+    public Partner(String name, String businessNumber, BigDecimal commissionRate, String contactEmail, String bankName, String accountNumber, String accountHolder, User user) {
         this.name = name;
         this.businessNumber = businessNumber;
         this.commissionRate = commissionRate;
+        this.contactEmail = contactEmail;
+        this.bankName = bankName;
+        this.accountNumber = accountNumber;
+        this.accountHolder = accountHolder;
         this.user = user;
     }
 }

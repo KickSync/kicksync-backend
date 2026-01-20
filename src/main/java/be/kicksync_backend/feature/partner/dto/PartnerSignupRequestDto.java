@@ -1,6 +1,7 @@
 package be.kicksync_backend.feature.partner.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -32,4 +33,21 @@ public class PartnerSignupRequestDto {
     @NotBlank(message = "사업자 등록번호는 필수입니다.")
     @Pattern(regexp = "^\\d{3}-\\d{2}-\\d{5}$", message = "사업자 등록번호 형식이 올바르지 않습니다. (000-00-00000)")
     private String businessNumber;
+
+    @Schema(description = "담당자 이메일", example = "contact@partner.com")
+    @NotBlank(message = "이메일은 필수입니다.")
+    @Email(message = "올바른 이메일 형식이 아닙니다.")
+    private String contactEmail;
+
+    @Schema(description = "정산 은행", example = "KB국민은행")
+    @NotBlank(message = "정산 은행은 필수입니다.")
+    private String bankName;
+
+    @Schema(description = "계좌 번호", example = "123-456-789012")
+    @NotBlank(message = "계좌 번호는 필수입니다.")
+    private String accountNumber;
+
+    @Schema(description = "예금주", example = "나이키코리아")
+    @NotBlank(message = "예금주는 필수입니다.")
+    private String accountHolder;
 }

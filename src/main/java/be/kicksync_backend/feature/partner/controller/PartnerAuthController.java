@@ -25,9 +25,10 @@ public class PartnerAuthController {
 
     private final PartnerAuthService partnerAuthService;
 
-    @Operation(summary = "입점사 회원가입", description = "입점사 계정을 생성하고 파트너 정보를 등록합니다.")
+    @Operation(summary = "입점사 회원가입", description = "입점사 계정을 생성하고 파트너 정보를 등록합니다. (아이디는 'pt_'로 시작해야 합니다)")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "회원가입 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "입점사 회원가입 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 데이터 (아이디 패턴 불일치 등)"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 존재하는 아이디")
     })
     @PostMapping("/signup")

@@ -41,7 +41,11 @@ public class PartnerAuthService {
         Partner partner = Partner.builder()
                 .name(requestDto.getPartnerName())
                 .businessNumber(requestDto.getBusinessNumber())
-                .commissionRate(BigDecimal.valueOf(0.05))
+                .commissionRate(BigDecimal.valueOf(0.05)) // 기본 수수료 5%
+                .contactEmail(requestDto.getContactEmail())
+                .bankName(requestDto.getBankName())
+                .accountNumber(requestDto.getAccountNumber())
+                .accountHolder(requestDto.getAccountHolder())
                 .user(savedUser)
                 .build();
         
