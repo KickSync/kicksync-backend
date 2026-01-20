@@ -8,6 +8,10 @@ import be.kicksync_backend.feature.product.dto.ProductCreateRequestDto;
 import be.kicksync_backend.feature.product.dto.ProductResponseDto;
 import be.kicksync_backend.feature.product.dto.ProductUpdateRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -44,7 +48,7 @@ public class PartnerProductController {
     public ResponseEntity<ApiResponse<ProductResponseDto>> createProduct(
             @Valid @RequestBody ProductCreateRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        ProductResponseDto product = partnerProductService.createProduct(requestDto, userDetails.getUser());
+        ProductResponseDto product = partnerProductService.createProduct(requestDto, userDetails.getId());
         ApiResponse<ProductResponseDto> response = ApiResponse.<ProductResponseDto>builder()
                 .msg(ResponseText.CREATE_PRODUCT_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.CREATED.value()))
@@ -61,11 +65,19 @@ public class PartnerProductController {
      * @return 입점사가 등록한 상품 목록
      */
     @Operation(summary = "내 상품 목록 조회", description = "입점사가 등록한 상품 목록을 조회합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "상품 목록 조회 성공")
+    })
+    @Parameters({
+        @Parameter(name = "page", description = "페이지 번호 (0부터 시작)", in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "0")),
+        @Parameter(name = "size", description = "페이지 크기", in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "20")),
+        @Parameter(name = "sort", description = "정렬 기준 (예: createdAt,desc)", in = ParameterIn.QUERY, schema = @Schema(type = "string", defaultValue = "createdAt,desc"))
+    })
     @GetMapping
     public ResponseEntity<ApiResponse<Page<ProductResponseDto>>> getMyProducts(
-            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable,
+            @Parameter(hidden = true) @PageableDefault(size = 20, sort = "createdAt") Pageable pageable,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        Page<ProductResponseDto> products = partnerProductService.getMyProducts(pageable, userDetails.getUser());
+        Page<ProductResponseDto> products = partnerProductService.getMyProducts(pageable, userDetails.getId());
         ApiResponse<Page<ProductResponseDto>> response = ApiResponse.<Page<ProductResponseDto>>builder()
                 .msg(ResponseText.GET_PRODUCTS_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
@@ -88,7 +100,7 @@ public class PartnerProductController {
             @PathVariable Long productId,
             @Valid @RequestBody ProductUpdateRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        ProductResponseDto updatedProduct = partnerProductService.updateProduct(productId, requestDto, userDetails.getUser());
+        ProductResponseDto updatedProduct = partnerProductService.updateProduct(productId, requestDto, userDetails.getId());
         ApiResponse<ProductResponseDto> response = ApiResponse.<ProductResponseDto>builder()
                 .msg(ResponseText.UPDATE_PRODUCT_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
@@ -109,7 +121,7 @@ public class PartnerProductController {
     public ResponseEntity<ApiResponse<Void>> deleteProduct(
             @PathVariable Long productId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        partnerProductService.deleteProduct(productId, userDetails.getUser());
+        partnerProductService.deleteProduct(productId, userDetails.getId());
         ApiResponse<Void> response = ApiResponse.<Void>builder()
                 .msg(ResponseText.DELETE_PRODUCT_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))

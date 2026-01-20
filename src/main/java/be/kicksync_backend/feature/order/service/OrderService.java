@@ -1,5 +1,6 @@
 package be.kicksync_backend.feature.order.service;
 
+import be.kicksync_backend.common.entity.Address;
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.feature.order.entity.OrderStatus;
@@ -76,7 +77,7 @@ public class OrderService {
                     .user(user)
                     .receiverName(requestDto.getReceiverName())
                     .receiverPhone(requestDto.getReceiverPhone())
-                    .address(new be.kicksync_backend.feature.order.entity.Address(
+                    .address(new Address(
                             requestDto.getAddress().getZipcode(),
                             requestDto.getAddress().getStreet(),
                             requestDto.getAddress().getDetail()))
@@ -102,18 +103,20 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Order getOrderDetails(Long orderId, Long userId) {
-        Order order = orderRepository.findById(orderId)
+    public OrderResponseDto getOrderDetails(Long orderId, Long userId) {
+        Order order = orderRepository.findByIdWithItems(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
         if (!Objects.equals(order.getUser().getId(), userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
         }
-        return order;
+        return OrderResponseDto.from(order);
     }
 
     @Transactional(readOnly = true)
-    public List<Order> getUserOrders(Long userId) {
-        return orderRepository.findAllByUser_IdOrderByCreatedAtDesc(userId);
+    public List<OrderResponseDto> getUserOrders(Long userId) {
+        return orderRepository.findAllWithItemsByUserId(userId).stream()
+                .map(OrderResponseDto::from)
+                .collect(Collectors.toList());
     }
 
     @Transactional

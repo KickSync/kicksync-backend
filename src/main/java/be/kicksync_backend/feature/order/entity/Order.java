@@ -1,5 +1,6 @@
 package be.kicksync_backend.feature.order.entity;
 
+import be.kicksync_backend.common.entity.Address;
 import be.kicksync_backend.common.entity.BaseTimeEntity;
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;

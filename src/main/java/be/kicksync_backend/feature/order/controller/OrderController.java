@@ -6,7 +6,6 @@ import be.kicksync_backend.common.security.UserDetailsImpl;
 import be.kicksync_backend.feature.order.dto.OrderCancelRequestDto;
 import be.kicksync_backend.feature.order.dto.OrderCreateRequestDto;
 import be.kicksync_backend.feature.order.dto.OrderResponseDto;
-import be.kicksync_backend.feature.order.entity.Order;
 import be.kicksync_backend.feature.order.service.OrderFacade;
 import be.kicksync_backend.feature.order.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,7 +48,7 @@ public class OrderController {
     public ResponseEntity<ApiResponse<List<OrderResponseDto>>> createOrder(
             @Valid @RequestBody OrderCreateRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        List<OrderResponseDto> responseDto = orderFacade.createOrderWithLock(requestDto, userDetails.getUser().getId());
+        List<OrderResponseDto> responseDto = orderFacade.createOrderWithLock(requestDto, userDetails.getId());
         ApiResponse<List<OrderResponseDto>> apiResponse = ApiResponse.<List<OrderResponseDto>>builder()
                 .msg(ResponseText.ORDER_CREATE_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.CREATED.value()))
@@ -74,8 +73,7 @@ public class OrderController {
     public ResponseEntity<ApiResponse<OrderResponseDto>> getOrderDetails(
             @PathVariable Long orderId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        Order order = orderService.getOrderDetails(orderId, userDetails.getUser().getId());
-        OrderResponseDto responseDto = new OrderResponseDto(order);
+        OrderResponseDto responseDto = orderService.getOrderDetails(orderId, userDetails.getId());
         ApiResponse<OrderResponseDto> apiResponse = ApiResponse.<OrderResponseDto>builder()
                 .msg(ResponseText.ORDER_DETAIL_FETCH_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
@@ -97,10 +95,7 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getUserOrders(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        List<Order> orders = orderService.getUserOrders(userDetails.getUser().getId());
-        List<OrderResponseDto> responseDtos = orders.stream()
-                .map(OrderResponseDto::from)
-                .collect(Collectors.toList());
+        List<OrderResponseDto> responseDtos = orderService.getUserOrders(userDetails.getId());
 
         ApiResponse<List<OrderResponseDto>> apiResponse = ApiResponse.<List<OrderResponseDto>>builder()
                 .msg(ResponseText.ORDER_LIST_FETCH_SUCCESS.getMsg())
@@ -128,7 +123,7 @@ public class OrderController {
             @PathVariable Long orderId,
             @RequestBody(required = false) OrderCancelRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        orderFacade.cancelOrder(orderId, requestDto, userDetails.getUser().getId());
+        orderFacade.cancelOrder(orderId, requestDto, userDetails.getId());
         ApiResponse<Void> apiResponse = ApiResponse.<Void>builder()
                 .msg(ResponseText.ORDER_CANCEL_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))

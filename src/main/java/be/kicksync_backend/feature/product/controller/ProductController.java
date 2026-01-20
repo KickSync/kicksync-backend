@@ -5,6 +5,10 @@ import be.kicksync_backend.common.dto.ResponseText;
 import be.kicksync_backend.feature.product.dto.ProductResponseDto;
 import be.kicksync_backend.feature.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -35,9 +39,14 @@ public class ProductController {
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "상품 목록 조회 성공")
     })
+    @Parameters({
+        @Parameter(name = "page", description = "페이지 번호 (0부터 시작)", in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "0")),
+        @Parameter(name = "size", description = "페이지 크기", in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "20")),
+        @Parameter(name = "sort", description = "정렬 기준 (예: id,desc)", in = ParameterIn.QUERY, schema = @Schema(type = "string", defaultValue = "id,desc"))
+    })
     @GetMapping
     public ResponseEntity<ApiResponse<Page<ProductResponseDto>>> getAllProducts(
-            @PageableDefault(size = 20, sort = "id") Pageable pageable) {
+            @Parameter(hidden = true) @PageableDefault(size = 20, sort = "id") Pageable pageable) {
         Page<ProductResponseDto> products = productService.getAllProducts(pageable);
         ApiResponse<Page<ProductResponseDto>> response = ApiResponse.<Page<ProductResponseDto>>builder()
                 .msg(ResponseText.GET_PRODUCTS_SUCCESS.getMsg())

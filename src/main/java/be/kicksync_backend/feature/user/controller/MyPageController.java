@@ -8,6 +8,10 @@ import be.kicksync_backend.feature.user.dto.ProfileUpdateRequestDto;
 import be.kicksync_backend.feature.user.dto.UserProfileResponseDto;
 import be.kicksync_backend.feature.user.service.MyPageService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -82,10 +86,15 @@ public class MyPageController {
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "주문 내역 조회 성공")
     })
+    @Parameters({
+        @Parameter(name = "page", description = "페이지 번호 (0부터 시작)", in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "0")),
+        @Parameter(name = "size", description = "페이지 크기", in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "10")),
+        @Parameter(name = "sort", description = "정렬 기준 (예: createdAt,desc)", in = ParameterIn.QUERY, schema = @Schema(type = "string", defaultValue = "createdAt,desc"))
+    })
     @GetMapping("/orders")
     public ResponseEntity<ApiResponse<Page<OrderResponseDto>>> getMyOrderHistory(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
+            @Parameter(hidden = true) @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
         Page<OrderResponseDto> orderHistory = myPageService.getOrderHistory(userDetails.getUsername(), pageable);
         ApiResponse<Page<OrderResponseDto>> response = ApiResponse.<Page<OrderResponseDto>>builder()
                 .msg(ResponseText.ORDER_HISTORY_GET_SUCCESS.getMsg())

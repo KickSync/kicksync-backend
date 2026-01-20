@@ -8,6 +8,7 @@ import be.kicksync_backend.feature.user.dto.UserResponseDto;
 import be.kicksync_backend.feature.user.dto.UserSignupRequestDto;
 import be.kicksync_backend.feature.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -86,7 +87,7 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestHeader("Authorization") String authHeader) {
+            @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
 
         String accessToken = authHeader.substring(7);
 

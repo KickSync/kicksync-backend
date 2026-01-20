@@ -21,6 +21,7 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
+        default_batch_fetch_size: 1000
         # show_sql: true
         format_sql: true
     database-platform: org.hibernate.dialect.MySQLDialect
@@ -63,3 +64,8 @@ iamport:
 toss:
   api:
     key: ${TOSS_KEY}
+
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+    doc-expansion: none

@@ -46,11 +46,11 @@ public class PaymentController {
     public ResponseEntity<ApiResponse<PaymentResponseDto>> verifyPayment(
             @Valid @RequestBody PaymentRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException, IamportResponseException {
-        Payment payment = paymentService.verifyPayment(requestDto, userDetails.getUser().getId());
+        PaymentResponseDto payment = paymentService.verifyPayment(requestDto, userDetails.getId());
         ApiResponse<PaymentResponseDto> apiResponse = ApiResponse.<PaymentResponseDto>builder()
                 .msg(ResponseText.PAYMENT_VERIFICATION_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
-                .data(PaymentResponseDto.from(payment))
+                .data(payment)
                 .build();
         return ResponseEntity.ok(apiResponse);
     }
@@ -71,11 +71,11 @@ public class PaymentController {
     public ResponseEntity<ApiResponse<PaymentResponseDto>> getPaymentByOrderId(
             @PathVariable Long orderId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        Payment payment = paymentService.getPaymentByOrderId(orderId, userDetails.getUser().getId());
+        PaymentResponseDto payment = paymentService.getPaymentByOrderId(orderId, userDetails.getId());
         ApiResponse<PaymentResponseDto> apiResponse = ApiResponse.<PaymentResponseDto>builder()
                 .msg(ResponseText.PAYMENT_FOUND_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
-                .data(PaymentResponseDto.from(payment))
+                .data(payment)
                 .build();
         return ResponseEntity.ok(apiResponse);
     }
@@ -93,11 +93,11 @@ public class PaymentController {
     @GetMapping("")
     public ResponseEntity<ApiResponse<List<PaymentResponseDto>>> getMyPayments(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        List<Payment> payments = paymentService.getMyPayments(userDetails.getUser().getId());
+        List<PaymentResponseDto> payments = paymentService.getMyPayments(userDetails.getId());
         ApiResponse<List<PaymentResponseDto>> apiResponse = ApiResponse.<List<PaymentResponseDto>>builder()
                 .msg(ResponseText.PAYMENT_HISTORY_FOUND_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
-                .data(PaymentResponseDto.from(payments))
+                .data(payments)
                 .build();
         return ResponseEntity.ok(apiResponse);
     }

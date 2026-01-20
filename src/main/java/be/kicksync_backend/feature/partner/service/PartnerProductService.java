@@ -11,7 +11,6 @@ import be.kicksync_backend.feature.product.dto.ProductUpdateRequestDto;
 import be.kicksync_backend.feature.product.entity.Product;
 import be.kicksync_backend.feature.product.repository.DropEventRepository;
 import be.kicksync_backend.feature.product.repository.ProductRepository;
-import be.kicksync_backend.feature.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
@@ -29,31 +28,38 @@ public class PartnerProductService {
     private final OrderItemRepository orderItemRepository;
     private final DropEventRepository dropEventRepository;
 
-    private Partner getPartnerForUser(User user) {
-        return partnerRepository.findByUser_Id(user.getId())
+    private Partner getPartnerForUser(Long userId) {
+        return partnerRepository.findByUser_Id(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PARTNER_NOT_FOUND));
     }
 
     @CacheEvict(value = "products", allEntries = true)
-    public ProductResponseDto createProduct(ProductCreateRequestDto requestDto, User user) {
-        Partner partner = getPartnerForUser(user);
+    public ProductResponseDto createProduct(ProductCreateRequestDto requestDto, Long userId) {
+        Partner partner = getPartnerForUser(userId);
 
-        Product product = requestDto.toEntity(partner);
+        Product product = Product.builder()
+                .name(requestDto.getName())
+                .model(requestDto.getModel())
+                .releaseDate(requestDto.getReleaseDate())
+                .retailPrice(requestDto.getRetailPrice())
+                .stock(requestDto.getStock())
+                .partner(partner)
+                .build();
                 
         Product savedProduct = productRepository.save(product);
         return new ProductResponseDto(savedProduct);
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductResponseDto> getMyProducts(Pageable pageable, User user) {
-        Partner partner = getPartnerForUser(user);
+    public Page<ProductResponseDto> getMyProducts(Pageable pageable, Long userId) {
+        Partner partner = getPartnerForUser(userId);
         return productRepository.findAllByPartnerId(partner.getId(), pageable)
                 .map(ProductResponseDto::new);
     }
 
     @CacheEvict(value = "products", allEntries = true)
-    public ProductResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto, User user) {
-        Partner partner = getPartnerForUser(user);
+    public ProductResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto, Long userId) {
+        Partner partner = getPartnerForUser(userId);
         
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
@@ -67,8 +73,8 @@ public class PartnerProductService {
     }
 
     @CacheEvict(value = "products", allEntries = true)
-    public void deleteProduct(Long productId, User user) {
-        Partner partner = getPartnerForUser(user);
+    public void deleteProduct(Long productId, Long userId) {
+        Partner partner = getPartnerForUser(userId);
         
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
