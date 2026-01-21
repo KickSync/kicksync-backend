@@ -68,7 +68,7 @@ public class PartnerProductService {
             throw new CustomException(ErrorCode.ACCESS_DENIED);
         }
 
-        product.update(requestDto.getName(), requestDto.getModel(), requestDto.getReleaseDate(), requestDto.getRetailPrice());
+        product.update(requestDto.getName(), requestDto.getModel(), requestDto.getReleaseDate(), requestDto.getRetailPrice(), requestDto.getStock());
         return new ProductResponseDto(product);
     }
 
