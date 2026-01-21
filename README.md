@@ -10,9 +10,23 @@
 > * **동시성 제어:** `Redisson` 분산 락 도입으로 동시 접속 상황 재고 오차율 **0%** 달성 → **(초과 결제 방지)**
 > * **조회 성능:** Look-aside 캐싱 전략으로 TPS **1,736 → 5,831 (약 3.3배 증가)** 및 응답 속도 **73% 개선**
 > 
-> 
+>
 
 <br>
+
+<div align="left">
+  <h3>API 테스트 & 문서 (Swagger UI)</h3>
+  
+  <a href="http://134.185.116.180/swagger-ui/index.html#/">
+  <img src="https://img.shields.io/badge/Swagger_UI-Live_Test-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger UI" />
+</a>
+</div>
+
+> 버튼을 통해 API를 직접 호출해보실 수 있습니다.
+> 
+> 로그인 후 발급된 Access Token을 Authorize 버튼에 입력하여 테스트 가능합니다.
+
+<br><br>
 
 ## 1. 프로젝트 소개
 
