@@ -40,3 +40,4 @@ out/
 /gradle.properties
 /src/main/resources/application-local.yml
 /src/test/resources/application.yml
+.env
