@@ -309,9 +309,9 @@
 --------
 <br><br>
 
-## 7. ERD (최신화 예정)
+## 7. ERD
 
-<img width="100%" alt="ERD" src="https://github.com/user-attachments/assets/5dace7c6-d2d5-4f9c-92ac-2b5bbc95f64e" />
+<img width="2400" height="1582" alt="image" src="https://github.com/user-attachments/assets/176389bd-f7ea-4bd8-a30f-0e08b778ae92" />
 
 * **[ ERD Cloud 링크 바로가기 ](https://www.erdcloud.com/d/B5xBxsPqkP4uwSPt4)**
 
