@@ -127,7 +127,7 @@
 
 ### **[ 파티셔닝 아키텍처 구조도 ]**
 
-<img width="100%" alt="Partitioning Architecture" src="https://github.com/user-attachments/assets/0d74dd20-e17a-4dcd-ab02-d39a4c51d9d6" />
+<img width="1211" height="1001" alt="image" src="https://github.com/user-attachments/assets/c7bd7827-308e-4415-a2a2-eead19f9bb46" />
 
 <br><br><br>
 
