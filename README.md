@@ -164,7 +164,7 @@
 
 <br>
 
-### **[ 파티셔닝 아키텍처 구조도 ]**
+### **< 파티셔닝 아키텍처 구조도 >**
 
 <img width="1211" height="1001" alt="image" src="https://github.com/user-attachments/assets/c7bd7827-308e-4415-a2a2-eead19f9bb46" />
 
@@ -229,7 +229,7 @@
 > </div>
 > </details>
 
-### **[ 분산 락 시퀀스 다이어그램 (Lock Facade) ]**
+### **< 분산 락 시퀀스 다이어그램 (Lock Facade) >**
 <img width="950" height="740" alt="image" src="https://github.com/user-attachments/assets/46908311-ec98-4e45-af47-d942936be787" />
 
 <br>
