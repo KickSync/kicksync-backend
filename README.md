@@ -154,6 +154,8 @@
   * 동시 요청 500건 테스트 시 **재고 오차 0건** 달성
   * `WaitTime`과 `LeaseTime` 설정을 통해 데드락 방지 및 UX 고려
 
+<br>
+
 > <details>
 > <summary><strong>Redisson 락 동작 로그 및 테스트 환경 보기</strong></summary>
 > <div markdown="1">
@@ -187,6 +189,12 @@
 >
 > </div>
 > </details>
+
+### **[ 분산 락 시퀀스 다이어그램 (Lock Facade) ]**
+<img width="950" height="740" alt="image" src="https://github.com/user-attachments/assets/46908311-ec98-4e45-af47-d942936be787" />
+
+<br>
+
    <br><br>
 
 ### [ Phase 3 ] 캐싱 전략을 통한 조회 성능 236% 개선
@@ -254,14 +262,24 @@
 * **해결 및 결과:** ShedLock 도입을 통해 인스턴스 수와 무관하게 **단일 서버 수행을 보장**하고 데**이터 무결성**을 확보
 <br>
 
-### 2. JPA 대량 Insert 성능 문제 해결 (Bulk Insert)
 
-* **문제 상황:** JPA `saveAll()`로 10만 건 데이터 저장 시 약 20초 소요
-* **원인 분석:** MySQL의 `IDENTITY` 전략 사용 시 JPA는 PK 값을 알기 위해 **Insert 쿼리를 매번 실행(단건 처리)** 하므로 배칭 최적화 불가
-* 기술적 의사결정:
-   * **Trade-off:** **JPA의 편의성(1차 캐시, Dirty Checking)** 포기 vs **대용량 처리 속도** 확보
-   * **판단 근거:** 정산 데이터 저장은 조회나 수정이 없는 **Write-only** 작업입니다. 따라서 영속성 컨텍스트 관리 비용을 지불하는 것보다 쿼리를 단일 패킷으로 묶어 보내는 **JDBC의 처리 속도가 비즈니스적으로 더 중요하다고 판단**했습니다.
-* **해결 및 결과:** `JdbcTemplate`을 활용한 **Bulk Insert**로 전환하여 처리 시간 20.2s → **0.67s (약 96% 성능 개선)** 달성
+### 2. 정산 데이터 적재(Write) 성능 최적화 (JPA vs JDBC)
+
+* **테스트 배경**
+    * 배치 시스템 고도화 전, 데이터 적재 단계의 병목 지점을 파악하기 위해 10만 건의 데이터로 단위 성능 테스트 진행
+* **문제 상황**
+    * JPA `saveAll()` 사용 시 10만 건 저장에 약 **20초** 소요
+* **원인 분석**
+    * MySQL의 `IDENTITY` 전략 사용 시, JPA는 PK 값을 확보하기 위해 Insert 쿼리를 매번 단건으로 실행함. 이로 인해 **Batch Insert 최적화 불가** 확인
+* **기술적 의사결정**
+    * **Trade-off:** JPA의 편의성(1차 캐시, Dirty Checking) 포기 vs 대용량 처리 속도 확보
+    * **판단 근거:** 정산 데이터 저장은 조회/수정이 동반되지 않는 **Write-only** 작업임. 영속성 컨텍스트 관리 비용을 지불하는 것보다, 쿼리를 단일 패킷으로 묶어 보내는 JDBC의 처리 속도가 비즈니스적으로 더 효율적이라 판단
+* **검증 결과**
+    * `JdbcTemplate`을 활용한 Bulk Insert로 전환하여 처리 시간 **20.2s → 0.67s (약 96% 성능 개선)** 달성
+* **Current Status & Roadmap**
+    * **Current:** 100만 건 배치 환경에서 **Spring Batch 파티셔닝(병렬 처리)** 을 통해 OOM 방지 및 전체 수행 속도를 **1분대**로 단축
+    * **Roadmap:** 파티셔닝 구조에 검증된 JDBC Batch 기술을 결합(`JdbcBatchItemWriter` 도입)하여 **DB I/O 부하를 추가적으로 감소**시킬 계획
+
 
 --------
 <br><br>
