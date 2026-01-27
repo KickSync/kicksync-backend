@@ -18,11 +18,11 @@ public class SettlementScheduler {
     private final JobLauncher jobLauncher;
     private final Job settlementJob;
 
-    @Scheduled(cron = "0 * * * * ?") // 매분 실행 (테스트용)
+    @Scheduled(cron = "0 0 3 * * *") // 매일 새벽 3시 실행
     @SchedulerLock(name = "dailySettlementTask")
     public void runSettlementJob() throws Exception {
         long startTime = System.currentTimeMillis();
-        LocalDate settlementDate = LocalDate.now().minusDays(4);
+        LocalDate settlementDate = LocalDate.now().minusDays(14);
 
         log.info("=== 일일 정산 배치 작업 시작 ===");
         log.info("정산 대상 날짜: {}", settlementDate);

@@ -14,6 +14,7 @@ public enum OrderStatus {
     CANCELLING("취소 처리중"),
     CANCELLED("주문 취소"),
     PAYMENT_FAILED("결제 실패"),
+    PURCHASE_CONFIRMED("구매 확정"),
     SETTLED("정산 완료");
 
     private final String description;
