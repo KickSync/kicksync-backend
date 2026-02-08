@@ -172,16 +172,19 @@
 
 ### [ Phase 2 ] 동시 접속 상황에서의 재고 정합성 100% 보장
 
-**Q. 인기 상품 발매 시 수천 명의 동시 요청이 발생한다면? (Race Condition)**
+**Q. 인기 상품 발매 시, 0.1초 만에 몰리는 동시 주문을 DB가 감당할 수 있는가?**
 
-* **문제 상황:** nGrinder 부하 테스트 결과, 재고가 음수(-N)로 떨어지는 **초과 판매** 현상 발생
+* **문제 상황**
+    * **Race Condition 발생:** nGrinder VUser 500명 동시 주문 테스트 결과 재고가 음수(-N)로 떨어지는 **초과 판매** 현상 확인
+    * **비즈니스 리스크:** 실제 서비스였다면 환불 처리 비용 증가 및 사용자 신뢰도 하락으로 직결될 심각한 비즈니스 결함 식별
+
 * **기술적 의사결정:**
   * **1. 동시성 제어 방식 선정:**
     * **Java Synchronized:** 다중 서버 환경(Scale-out)에서 인스턴스 간 동기화 불가 → **[기각]**
     * **Pessimistic Lock (DB):** 확실한 데이터 보호는 가능하나 데드락 위험 및 대기 시간 증가로 인한 트래픽 병목 우려 → **[보류]**
     * **Redis Distributed Lock (Redisson):** Pub/Sub 방식을 사용하여 Redis 부하를 줄이면서 분산 환경 제어 가능 → **[채택]**
   
-  * **2. Lock 구현체 최저화 (Letturce vs Redisson):**
+  * **2. Lock 라이브러리 선정 (Letturce vs Redisson):**
     * **Lettuce:** Spin Lock 방식으로 락 획득 재시도 시 Redis에 과도한 트래픽 부하 유발
     * **Redisson:** **Pub/Sub 방식**을 지원하여 락 해제 시에만 클라이언트에 알림을 보내는 방식으로 **Redis 부하 최소화 및 대기 효율성 증대**
    
@@ -190,8 +193,8 @@
     * **해결:** **Custom AOP**를 도입하여 **'락 획득 → 트랜잭션 시작 → 커밋 → 락 해제'** 순서를 강제함으로써 동시성 이슈 원천 차단
 
 * **검증 결과:**
-  * 동시 요청 500건 테스트 시 **재고 오차 0건** 달성
-  * `WaitTime`과 `LeaseTime` 설정을 통해 데드락 방지 및 UX 고려
+  * 동시 요청 500건 테스트 시 **재고 오차 0건** 달성 (정합성 100%)
+  * `WaitTime`과 `LeaseTime` 설정을 통해 데드락 방지 및 UX(대기 시간) 고려
 
 <br>
 
@@ -238,7 +241,7 @@
 
 ### [ Phase 3 ] 조회 성능 24배 개선: 인덱스 튜닝의 한계 극복과 Redis 도입
 
-#### **Q. 수천 명의 사용자가 동시에 상품 목록을 새로고침 한다면 DB는 버틸 수 있을까?**
+#### **Q. 메인 상품 목록 조회 급증 시, 수천 명의 동시 접속 트래픽을 DB가 감당할 수 있는가?**
 
 #### **1. 테스트 환경**
 * **Hardware:** Apple M1 (Local Environment) / Tomcat Thread 200
@@ -251,9 +254,8 @@
 #### **2. 문제 인식 및 해결 과정**
 
 * **문제 상황**
-    * 선착순 이벤트 상황 가정 하에 VUser 1,000명 부하 테스트 실시
-    * 평균 응답 시간 **9.2초** 기록하며 서비스 불능 상태 발생
-    * `release_date`(발매일) 정렬 시 인덱스 부재로 인한 **Full Table Scan 및 Filesort**가 DB CPU 100% 점유
+* **서비스 불능:** 인기 상품 발매 직후 트래픽 급증 시나리오(VUser 1,000)에서 평균 응답 시간 **9.2초** 기록 및 DB 커넥션 고갈 발생
+    * **리소스 병목:** `release_date` 정렬 시 인덱스 부재로 인한 **Full Table Scan 및 Filesort**가 DB CPU 100% 점유
 
 * **[Step 1] 1차 시도: DB 인덱스 튜닝**
     * **조치:** `release_date` 인덱스 생성 후 재테스트 수행
@@ -262,7 +264,7 @@
 
 * **[Step 2] 최종 해결: Redis 캐싱 도입 (Look-aside)**
     * **전략:**
-        * **DB 부하 제거:** 트래픽의 80%가 집중되는 **1페이지(Hot Data)** 를 Redis에 캐싱하여 DB I/O 부하를 제거
+        * **DB 부하 제거:** 트래픽의 80%가 집중되는 **1페이지(Hot Data)** 를 Redis에 캐싱하여 DB I/O 부하를 제거 (**TTL 10분**)
         * **Fail-safe 확보:** 인덱스는 Cache Miss 발생 시 DB 과부하를 막는 안전장치 및 하위 페이지 조회를 위해 유지
         * **정합성 관리:** `@CacheEvict` 활용하여 상품 정보 수정 시 캐시 즉시 무효화로 데이터 최신성 유지
 
@@ -289,15 +291,15 @@
    > #### 페이징 조회 (40건)
    >
    > **[ Step 1. DB Only (No Index) ] - 서비스 붕괴**
-   >
+   > 
    ><img width="2048" height="614" alt="image" src="https://github.com/user-attachments/assets/9354df12-abeb-4880-8c64-ae9110c0a223" />
    >
    > **[ Step 2. Index Tuning ] - 성능 개선되었으나 여전히 병목 존재**
-   >
+   > 
    > <img width="2048" height="615" alt="image" src="https://github.com/user-attachments/assets/71e6f898-5ae1-4cc7-a399-4b36c401b95a" />
    >
    > **[ Step 3. Redis Caching ] - 압도적인 처리량 및 응답 속도 확보**
-   >
+   > 
    > <img width="2048" height="602" alt="image" src="https://github.com/user-attachments/assets/871381ef-105b-4d1a-aa80-a9dbe8145e0d" />
    > </div>
    > </details>
