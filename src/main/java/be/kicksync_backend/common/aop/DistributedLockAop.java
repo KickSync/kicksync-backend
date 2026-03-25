@@ -59,8 +59,14 @@ public class DistributedLockAop {
             List<RLock> locks = new ArrayList<>();
             List<String> lockNames = new ArrayList<>();
 
-            for (Object item : collection) {
-                String lockKey = REDISSON_LOCK_PREFIX + "product:" + item.toString();
+            // Deadlock 방지를 위해 Key 정렬
+            List<String> sortedKeys = collection.stream()
+                    .map(Object::toString)
+                    .sorted()
+                    .toList();
+
+            for (String item : sortedKeys) {
+                String lockKey = REDISSON_LOCK_PREFIX + "product:" + item;
                 locks.add(redissonClient.getLock(lockKey));
                 lockNames.add(lockKey);
             }

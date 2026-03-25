@@ -47,9 +47,10 @@ public class PaymentClient {
             maxAttempts = 2,
             backoff = @Backoff(delay = 1000)
     )
-    public IamportResponse<Payment> cancelPaymentByImpUid(String impUid, String reason) throws IamportResponseException, IOException {
-        CancelData cancelData = new CancelData(impUid, true);
+    public IamportResponse<Payment> cancelPaymentByImpUid(String impUid, java.math.BigDecimal amount, String reason, java.math.BigDecimal checksum) throws IamportResponseException, IOException {
+        CancelData cancelData = new CancelData(impUid, true, amount);
         cancelData.setReason(reason);
+        cancelData.setChecksum(checksum);
         return iamportClient.cancelPaymentByImpUid(cancelData);
     }
 

@@ -4,13 +4,14 @@ import be.kicksync_backend.feature.batch.listener.PerformanceStepExecutionListen
 import be.kicksync_backend.feature.batch.listener.SettlementSkipListener;
 import be.kicksync_backend.feature.batch.partitioner.PartnerIdRangePartitioner;
 import be.kicksync_backend.feature.batch.processor.SettlementItemProcessor;
+import be.kicksync_backend.feature.order.entity.OrderStatus;
 import be.kicksync_backend.feature.payment.dto.PartnerSettlementDto;
-import be.kicksync_backend.feature.payment.entity.PaymentStatus;
 import be.kicksync_backend.feature.settlement.entity.Settlement;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParametersInvalidException;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -32,7 +33,6 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.batch.core.JobParametersInvalidException;
 
 import javax.sql.DataSource;
 import java.time.LocalDate;
@@ -157,30 +157,30 @@ public class SettlementJobConfig {
         }
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("paidStatus", PaymentStatus.PAID);
-        parameters.put("cancelledStatus", PaymentStatus.CANCELLED);
+        List<OrderStatus> paidStatuses = Arrays.asList(OrderStatus.PAYMENT_COMPLETED, OrderStatus.PREPARING, OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.SETTLED);
+        parameters.put("paidStatuses", paidStatuses);
+        parameters.put("cancelledStatus", OrderStatus.CANCELLED);
         parameters.put("startDate", startDate);
         parameters.put("endDate", endDate);
         parameters.put("minId", minId);
         parameters.put("maxId", maxId);
 
         StringBuilder queryStringBuilder = new StringBuilder();
-        queryStringBuilder.append(String.format("SELECT NEW %s(p.partnerId, SUM(CASE WHEN p.status = :paidStatus THEN p.paymentAmount WHEN p.status = :cancelledStatus THEN -p.paymentAmount ELSE 0 END)) ", PartnerSettlementDto.class.getName()));
-        queryStringBuilder.append("FROM Payment p ");
-        queryStringBuilder.append("WHERE ((p.status = :paidStatus AND p.paymentDate BETWEEN :startDate AND :endDate) OR (p.status = :cancelledStatus AND p.cancelledAt BETWEEN :startDate AND :endDate)) ");
-        queryStringBuilder.append("AND p.partnerId IS NOT NULL ");
-        queryStringBuilder.append("AND p.partnerId BETWEEN :minId AND :maxId ");
+        queryStringBuilder.append(String.format("SELECT NEW %s(o.partnerId, SUM(CASE WHEN o.status IN :paidStatuses THEN o.finalPrice WHEN o.status = :cancelledStatus THEN -o.finalPrice ELSE 0 END)) ", PartnerSettlementDto.class.getName()));
+        queryStringBuilder.append("FROM Order o ");
+        queryStringBuilder.append("WHERE ((o.status IN :paidStatuses AND o.orderDate BETWEEN :startDate AND :endDate) OR (o.status = :cancelledStatus AND o.updatedAt BETWEEN :startDate AND :endDate)) ");
+        queryStringBuilder.append("AND o.partnerId BETWEEN :minId AND :maxId ");
 
         if (partnerIdsStr != null && !partnerIdsStr.isEmpty()) {
             List<Long> partnerIds = Arrays.stream(partnerIdsStr.split(","))
                     .map(Long::parseLong)
                     .toList();
-            queryStringBuilder.append("AND p.partnerId IN :partnerIds ");
+            queryStringBuilder.append("AND o.partnerId IN :partnerIds ");
             parameters.put("partnerIds", partnerIds);
         }
 
-        queryStringBuilder.append("GROUP BY p.partnerId ");
-        queryStringBuilder.append("ORDER BY p.partnerId");
+        queryStringBuilder.append("GROUP BY o.partnerId ");
+        queryStringBuilder.append("ORDER BY o.partnerId");
 
 
         return new JpaPagingItemReaderBuilder<PartnerSettlementDto>()
@@ -188,13 +188,13 @@ public class SettlementJobConfig {
                 .entityManagerFactory(entityManagerFactory)
                 .queryString(queryStringBuilder.toString())
                 .parameterValues(parameters)
-                .pageSize(1000) // 청크 사이즈와 동일하게 설정하여 메모리 최적화
+                .pageSize(1000)
                 .build();
     }
 
     @Bean
     @StepScope
-    public ItemProcessor<PartnerSettlementDto, Settlement> settlementItemProcessor(
+    public SettlementItemProcessor settlementItemProcessor(
             @Value("#{jobParameters['settlementDate'] ?: null}") String settlementDateStr,
             @Value("#{jobParameters['startDate'] ?: null}") String startDateStr,
             @Value("#{jobParameters['endDate'] ?: null}") String endDateStr) {

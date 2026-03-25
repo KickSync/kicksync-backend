@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: kicksync-backend
+    restart: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DATABASE_URL=${DB_URL}
+      - DATABASE_USERNAME=${DB_USER}
+      - DATABASE_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET_KEY=${JWT_SECRET}
+      - JWT_ACCESS_EXPIRATION=${JWT_ACCESS_EXPIRATION}
+      - JWT_REFRESH_EXPIRATION=${JWT_REFRESH_EXPIRATION}
+      - IAMPORT_KEY=${IAMPORT_KEY}
+      - IAMPORT_SECRET_KEY=${IAMPORT_SECRET}
+      - TOSS_KEY=${TOSS_KEY}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - kicksync-net
+
+  db:
+    image: mysql:8.0
+    container_name: kicksync-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: kicksync
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - kicksync-net
+
+  redis:
+    image: redis:alpine
+    container_name: kicksync-redis
+    restart: always
+    networks:
+      - kicksync-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: kicksync-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - app
+    networks:
+      - kicksync-net
+
+volumes:
+  db_data:
+
+networks:
+  kicksync-net:
+    driver: bridge

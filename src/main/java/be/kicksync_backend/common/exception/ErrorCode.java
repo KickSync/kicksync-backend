@@ -19,15 +19,18 @@ public enum ErrorCode {
     ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 관리자를 찾을 수 없습니다."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 존재하는 닉네임입니다."),
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "닉네임은 공백만으로 지정할 수 없습니다."),
+    INVALID_USERNAME_PATTERN(HttpStatus.BAD_REQUEST, "아이디 형식이 올바르지 않습니다."),
     UNAUTHORIZED_SUBSCRIBE(HttpStatus.FORBIDDEN, "구독 권한을 확인할 수 없습니다."),
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
     UNAUTHORIZED_ACTION(HttpStatus.FORBIDDEN, "이 작업을 수행할 권한이 없습니다."),
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 
     // Drop Event
     DROP_EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 드롭 이벤트를 찾을 수 없습니다."),
 
     // Product
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
+    PARTNER_NOT_FOUND(HttpStatus.NOT_FOUND, "입점사를 찾을 수 없습니다."),
     PRODUCT_IN_USE(HttpStatus.CONFLICT, "다른 주문 또는 이벤트에서 사용 중인 상품은 삭제할 수 없습니다."),
     LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "주문 처리 중 충돌이 발생했습니다. 잠시 후 다시 시도해주세요."),
 
