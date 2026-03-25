@@ -20,18 +20,14 @@ public class RateLimitService {
 
     public void checkRateLimit(String identifier) {
         String key = RATE_LIMIT_PREFIX + identifier;
-        String countStr = redisTemplate.opsForValue().get(key);
+        Long count = redisTemplate.opsForValue().increment(key);
 
-        int count = countStr != null ? Integer.parseInt(countStr) : 0;
-
-        if (count >= MAX_ATTEMPTS) {
-            throw new CustomException(ErrorCode.TOO_MANY_REQUESTS);
+        if (count != null && count == 1) {
+            redisTemplate.expire(key, WINDOW_SECONDS, TimeUnit.SECONDS);
         }
 
-        if (count == 0) {
-            redisTemplate.opsForValue().set(key, "1", WINDOW_SECONDS, TimeUnit.SECONDS);
-        } else {
-            redisTemplate.opsForValue().increment(key);
+        if (count != null && count > MAX_ATTEMPTS) {
+            throw new CustomException(ErrorCode.TOO_MANY_REQUESTS);
         }
     }
 
