@@ -1,19 +1,22 @@
 package be.kicksync_backend.common.dto;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 import java.util.List;
 
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RestPage<T> {
 
-    private final List<T> content;
-    private final int page;
-    private final int size;
-    private final long totalElements;
-    private final int totalPages;
-    private final boolean first;
-    private final boolean last;
+    private List<T> content;
+    private int page;
+    private int size;
+    private long totalElements;
+    private int totalPages;
+    private boolean first;
+    private boolean last;
 
     public RestPage(Page<T> page) {
         this.content = page.getContent();
@@ -24,5 +27,4 @@ public class RestPage<T> {
         this.first = page.isFirst();
         this.last = page.isLast();
     }
-
 }
