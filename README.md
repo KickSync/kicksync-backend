@@ -72,7 +72,7 @@
 | **Database** | <img src="https://img.shields.io/badge/MySQL_8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white"> <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white"> | ACID 트랜잭션 데이터 무결성 보장 및 인메모리 고속 캐싱과 Redisson 분산 락 제어 |
 | **ORM** | <img src="https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=hibernate&logoColor=white"> | 객체 지향적 도메인 설계와 생산성 확보 및 JdbcTemplate Bulk Insert 혼용 쿼리 최적화 |
 | **Infra** | <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/Oracle_Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white"> | Docker 리소스 제한을 통한 물리적 인프라 모사 및 OCI 기반 운영 환경 확보 |
-| **Test & Monitor** | <img src="https://img.shields.io/badge/k6-7D64FF?style=for-the-badge&logo=k6&logoColor=white"> <img src="https://img.shields.io/badge/Scouter-00C7B7?style=for-the-badge&logo=scouter&logoColor=white"> | K6 가상 유저 스크립팅 기반 임계점 도출 및 APM과 Docker Stats 활용 실시간 병목 모니터링 |
+| **Test & Monitor** | <img src="https://img.shields.io/badge/k6-7D64FF?style=for-the-badge&logo=k6&logoColor=white"> <img src="https://img.shields.io/badge/Scouter-00C7B7?style=for-the-badge&logo=scouter&logoColor=white"> | k6 가상 유저 스크립팅 기반 임계점 도출 및 APM과 docker Stats 활용 실시간 병목 모니터링 |
 
 <br><br>
 
@@ -84,7 +84,7 @@
 
 **Q. 장바구니 다중 결제 시 발생하는 데드락과 트래픽 폭주로 인한 서버 마비를 어떻게 방어할 것인가?**
 
-* **문제 상황:** K6를 통한 VUser 500명 동시 주문 스트레스 테스트 결과 재고가 초과 판매되는 갱신 손실 발생 및 스레드 간 락 획득 순서가 꼬여 교착 상태 진입으로 p(95) 지연 시간이 15초에 달하는 마비 리스크 식별
+* **문제 상황:** k6를 통한 VUser 500명 동시 주문 스트레스 테스트 결과 재고가 초과 판매되는 갱신 손실 발생 및 스레드 간 락 획득 순서가 꼬여 교착 상태 진입으로 p(95) 지연 시간이 15초에 달하는 마비 리스크 식별
 * **기술적 의사결정 및 3단계 해결 과정:**
   1. **가시성 틈새 방어 (트랜잭션 격리):** `@Transactional` 커밋 전에 락이 먼저 풀리는 Spring AOP 프록시의 생명주기 불일치를 막고자 커스텀 AOP(`@DistributedLock`) 도입
   2. **MultiLock 오름차순 정렬 (데드락 사전 차단):** 다중 결제 시 SpEL로 파싱한 상품 ID를 오름차순 정렬하여 모든 스레드가 단방향으로 일관되게 락을 획득하도록 강제해 순환 대기 차단
@@ -115,7 +115,7 @@
 
 **Q. 트래픽의 80%가 집중되는 메인 전시 도메인에서, 2vCPU 인프라의 한계를 어떻게 극복할 것인가?**
 
-* **문제 상황:** K6 부하 인가 시 쿼리 파싱 비용 증가로 DB CPU 점유율이 102.3% 임계점에 도달하여 평균 응답 2.4초 지연 발생
+* **문제 상황:** k6 부하 인가 시 쿼리 파싱 비용 증가로 DB CPU 점유율이 102.3% 임계점에 도달하여 평균 응답 2.4초 지연 발생
 * **해결 과정:**
   1. **물리적 임계점 식별:** 복합 인덱스 튜닝을 마쳤음에도 B-Tree 탐색만으로 발생하는 디스크 I/O 한계 파악
   2. **Redis Look-aside 캐싱:** 조회가 빈번한 1페이지 데이터를 인메모리에 캐싱하여 DB I/O 부하 제거 및 CUD 발생 시 `@CacheEvict`로 캐시를 무효화하여 데이터 정합성 유지
@@ -132,7 +132,7 @@
     | **백엔드 가용성** | 99.99% | **99.59%** | 고부하 안정성 확보 |
 
 > <details>
-> <summary><strong>[ 증빙 자료 ] K6 부하 테스트 지표 및 Docker Stats 비교</strong></summary>
+> <summary><strong>[ 증빙 자료 ] k6 부하 테스트 지표 및 docker Stats 비교</strong></summary>
 > <div markdown="1">
 > <br>
 >
