@@ -92,6 +92,27 @@
 * **최종 성과:**
   * 초과 판매 0건으로 데이터 무결성 확보
   * 병목 해소를 통해 처리 대역폭 9,344건에서 59,045건 상승 및 p(95) 응답 시간 15.0초에서 4.49초 방어 완료
+ 
+> <details>
+> <summary><strong>[ 증빙 자료 ] k6 다중 결제 부하 테스트 지표 및 DB 레코드 검증</strong></summary>
+> <div markdown="1">
+> <br>
+>
+> **[ AS-IS ] 락 생명주기 불일치 및 교착 상태: 초과 판매 발생 및 시스템 마비**
+> <br>  
+> <img width="100%" height="100%" alt="AS-IS k6 result" src="https://github.com/user-attachments/assets/a50000a4-1552-46a1-9284-dff9538a901f" />
+> <br>
+> <img width="100%" height="100%" alt="AS-IS DB result" src="https://github.com/user-attachments/assets/c1852787-d343-4c72-b2cb-5910143bc969" />
+> <br><br>
+>
+> **[ TO-BE ] MultiLock 정렬 및 Fail-Fast: 데이터 무결성 100% 및 가용성 확보**
+> <br>
+> <img width="100%" height="100%" alt="TO-BE k6 result" src="https://github.com/user-attachments/assets/7e62e831-8dc7-4437-8ee7-c6d2716f3b3d" />
+> <br>
+> <img width="100%" height="100%" alt="TO-BE DB result" src="https://github.com/user-attachments/assets/794786d2-4be4-4077-8315-4216602ff8ee" />
+>
+> </div>
+> </details>
 
 <br>
 
@@ -138,17 +159,17 @@
 >
 > **[ AS-IS ] Cache OFF: DB CPU 102.3% 임계점 도달 및 타임아웃 발생**
 > <br>  
-> <img width="1412" height="994" alt="image" src="https://github.com/user-attachments/assets/d47eade7-2837-43ca-be87-78103f3754e8" />
+> <img width="1596" height="1466" alt="image" src="https://github.com/user-attachments/assets/85f2e793-b6a7-49f4-9f21-2704d22ad2c3" />
 >
-> <img width="808" height="148" alt="image" src="https://github.com/user-attachments/assets/d17bc604-2b11-4285-a0f5-99484cc8f51e" />
+> <img width="1454" height="172" alt="image" src="https://github.com/user-attachments/assets/0ed1edc1-bf71-4c90-90b4-5f465c9b27c5" />
 > <br>
 >
 > **[ TO-BE ] Redis ON: DB CPU 0.73% 안정화 및 TPS 811.5 확보**
 > <br>
 >
-> <img width="1416" height="1054" alt="image" src="https://github.com/user-attachments/assets/bbf49047-18fd-4e23-a1cb-c71541f92e24" />
+> <img width="1364" height="1282" alt="image" src="https://github.com/user-attachments/assets/fa6ab96c-64f2-42e4-938a-26db1945daf1" />
 > <br>
-> <img width="804" height="138" alt="image" src="https://github.com/user-attachments/assets/d51b1d32-1acd-4cae-b4fd-f7d8c52b2f06" />
+> <img width="1454" height="158" alt="image" src="https://github.com/user-attachments/assets/96bfc6ef-cbe5-4bf8-8d3a-2db2969f9e32" />
 >
 > > >
 > </div>
