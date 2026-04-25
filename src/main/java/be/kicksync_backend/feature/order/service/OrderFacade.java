@@ -25,8 +25,8 @@ public class OrderFacade {
 
     @DistributedLock(
             key = "#requestDto.orderItems.![productId]",
-            waitTime = 10,
-            leaseTime = 10,
+            waitTime = 1,
+            leaseTime = 5,
             timeUnit = TimeUnit.SECONDS
     )
     public List<OrderResponseDto> createOrderWithLock(OrderCreateRequestDto requestDto, Long userId) {

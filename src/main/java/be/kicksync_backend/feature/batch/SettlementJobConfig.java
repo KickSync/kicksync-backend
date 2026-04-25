@@ -157,18 +157,17 @@ public class SettlementJobConfig {
         }
 
         Map<String, Object> parameters = new HashMap<>();
-        List<OrderStatus> paidStatuses = Arrays.asList(OrderStatus.PAYMENT_COMPLETED, OrderStatus.PREPARING, OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.SETTLED);
-        parameters.put("paidStatuses", paidStatuses);
-        parameters.put("cancelledStatus", OrderStatus.CANCELLED);
+        parameters.put("purchaseConfirmedStatus", OrderStatus.PURCHASE_CONFIRMED);
         parameters.put("startDate", startDate);
         parameters.put("endDate", endDate);
         parameters.put("minId", minId);
         parameters.put("maxId", maxId);
 
         StringBuilder queryStringBuilder = new StringBuilder();
-        queryStringBuilder.append(String.format("SELECT NEW %s(o.partnerId, SUM(CASE WHEN o.status IN :paidStatuses THEN o.finalPrice WHEN o.status = :cancelledStatus THEN -o.finalPrice ELSE 0 END)) ", PartnerSettlementDto.class.getName()));
+        queryStringBuilder.append(String.format("SELECT NEW %s(o.partnerId, SUM(o.finalPrice)) ", PartnerSettlementDto.class.getName()));
         queryStringBuilder.append("FROM Order o ");
-        queryStringBuilder.append("WHERE ((o.status IN :paidStatuses AND o.orderDate BETWEEN :startDate AND :endDate) OR (o.status = :cancelledStatus AND o.updatedAt BETWEEN :startDate AND :endDate)) ");
+        queryStringBuilder.append("WHERE o.status = :purchaseConfirmedStatus ");
+        queryStringBuilder.append("AND o.orderDate BETWEEN :startDate AND :endDate ");
         queryStringBuilder.append("AND o.partnerId BETWEEN :minId AND :maxId ");
 
         if (partnerIdsStr != null && !partnerIdsStr.isEmpty()) {
