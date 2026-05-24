@@ -1,11 +1,18 @@
-version: '3.8'
-
 services:
   app:
     build: .
     container_name: kicksync-backend
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 1536M
+        reservations:
+          cpus: '0.5'
+          memory: 1024M
     environment:
+      - JAVA_OPTS=-Xms1024m -Xmx1024m -XX:+UseZGC
       - SPRING_PROFILES_ACTIVE=prod
       - DATABASE_URL=${DB_URL}
       - DATABASE_USERNAME=${DB_USER}
@@ -30,11 +37,23 @@ services:
     image: mysql:8.0
     container_name: kicksync-db
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2048M
+        reservations:
+          cpus: '0.5'
+          memory: 1024M
+    command:
+      - --innodb-buffer-pool-size=1024M
     environment:
       MYSQL_DATABASE: kicksync
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
     networks:
@@ -44,6 +63,11 @@ services:
     image: redis:alpine
     container_name: kicksync-redis
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 256M
     networks:
       - kicksync-net
 
@@ -51,6 +75,11 @@ services:
     image: nginx:alpine
     container_name: kicksync-nginx
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
     ports:
       - "80:80"
       - "443:443"
