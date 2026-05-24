@@ -43,3 +43,5 @@ out/
 
 .env
 .DS_Store
+.serena/
+/.clauderc
