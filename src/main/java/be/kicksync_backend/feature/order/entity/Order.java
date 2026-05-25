@@ -58,8 +58,11 @@ public class Order extends BaseTimeEntity {
     @Column(nullable = false)
     private String merchantUid;
 
+    @Column
+    private String trackingNumber;
+
     @Builder
-    public Order(User user, Address address, String receiverName, String receiverPhone, String requestMessage, List<OrderItem> orderItems, Long partnerId, String merchantUid) {
+    public Order(User user, Address address, String receiverName, String receiverPhone, String requestMessage, List<OrderItem> orderItems, Long partnerId, String merchantUid, String trackingNumber) {
         this.user = user;
         this.address = address;
         this.receiverName = receiverName;
@@ -69,6 +72,7 @@ public class Order extends BaseTimeEntity {
         this.status = OrderStatus.PENDING_PAYMENT;
         this.partnerId = partnerId;
         this.merchantUid = merchantUid;
+        this.trackingNumber = trackingNumber;
         orderItems.forEach(this::addOrderItem);
         this.finalPrice = calculateTotalPrice();
     }
@@ -137,6 +141,13 @@ public class Order extends BaseTimeEntity {
             throw new CustomException(ErrorCode.ORDER_DELIVER_NOT_ALLOWED_NOT_SHIPPED);
         }
         this.status = OrderStatus.DELIVERED;
+    }
+
+    public void confirmPurchase() {
+        if (this.status != OrderStatus.DELIVERED) {
+            throw new CustomException(ErrorCode.INVALID_ORDER_STATE);
+        }
+        this.status = OrderStatus.PURCHASE_CONFIRMED;
     }
 
     public void settle() {

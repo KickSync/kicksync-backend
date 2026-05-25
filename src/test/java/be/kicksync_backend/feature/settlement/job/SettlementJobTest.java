@@ -60,6 +60,9 @@ class SettlementJobTest {
     private JobLauncherTestUtils jobLauncherTestUtils;
 
     @Autowired
+    private Job settlementJob;
+
+    @Autowired
     private PaymentRepository paymentRepository;
 
     @Autowired
@@ -82,6 +85,7 @@ class SettlementJobTest {
 
     @BeforeEach
     void setUp() {
+        jobLauncherTestUtils.setJob(settlementJob);
         settlementRepository.deleteAll();
         paymentRepository.deleteAll();
         orderRepository.deleteAll();
@@ -97,22 +101,39 @@ class SettlementJobTest {
         User user = new User("settlementUser", passwordEncoder.encode("password"));
         userRepository.saveAndFlush(user);
 
-        Partner partner1 = Partner.builder().name("P1").businessNumber("1").commissionRate(BigDecimal.ZERO).build();
+        Partner partner1 = Partner.builder()
+                .name("P1")
+                .businessNumber("1")
+                .commissionRate(BigDecimal.ZERO)
+                .contactEmail("p1@test.com")
+                .bankName("Bank")
+                .accountNumber("1234")
+                .accountHolder("Holder")
+                .build();
         partnerRepository.save(partner1);
         
-        Partner partner2 = Partner.builder().name("P2").businessNumber("2").commissionRate(BigDecimal.ZERO).build();
+        Partner partner2 = Partner.builder()
+                .name("P2")
+                .businessNumber("2")
+                .commissionRate(BigDecimal.ZERO)
+                .contactEmail("p2@test.com")
+                .bankName("Bank")
+                .accountNumber("5678")
+                .accountHolder("Holder")
+                .build();
         partnerRepository.save(partner2);
 
         // Partner 1: Total 30000
         createPayment(user, partner1, 10000, PaymentStatus.PAID);
         createPayment(user, partner1, 20000, PaymentStatus.PAID);
 
-        // Partner 2: Total 5000 (10000 Paid - 5000 Cancelled)
-        createPayment(user, partner2, 10000, PaymentStatus.PAID);
-        createPayment(user, partner2, 5000, PaymentStatus.CANCELLED);
+        // Partner 2: Total 5000 (5000 Paid, 10000 Cancelled is excluded)
+        createPayment(user, partner2, 5000, PaymentStatus.PAID);
+        createPayment(user, partner2, 10000, PaymentStatus.CANCELLED);
 
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("settlementDate", LocalDate.now().toString())
+                .addLong("time", System.currentTimeMillis())
                 .toJobParameters();
 
         // when
@@ -167,6 +188,9 @@ class SettlementJobTest {
         if (status == PaymentStatus.PAID) {
             try {
                 order.processPaymentSuccess();
+                order.ship();
+                order.deliver();
+                order.confirmPurchase();
             } catch (Exception e) {}
         } else if (status == PaymentStatus.CANCELLED) {
              try {

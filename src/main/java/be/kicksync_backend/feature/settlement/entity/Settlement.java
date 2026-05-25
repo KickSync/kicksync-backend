@@ -1,7 +1,6 @@
 package be.kicksync_backend.feature.settlement.entity;
 
 import be.kicksync_backend.common.entity.BaseTimeEntity;
-import be.kicksync_backend.feature.order.entity.Order;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +12,9 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "settlements")
+@Table(name = "settlements", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_partner_settlement_date", columnNames = {"partner_id", "settlement_date"})
+})
 public class Settlement extends BaseTimeEntity {
 
     @Id
