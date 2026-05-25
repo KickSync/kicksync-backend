@@ -40,8 +40,24 @@ out/
 /gradle.properties
 /src/main/resources/application-local.yml
 /src/test/resources/application.yml
-
+application-test.yml
 .env
+
+### System Files (macOS & Windows) ###
 .DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+### AI & Agentic CLI Metadata (DO NOT COMMIT) ###
+.gemini/
+.gemini_security/
+.claude/
 .serena/
+.antigravitycli/
 /.clauderc
+conductor/
+
+### Node / Frontend Configs (For plugins/tools) ###
+node_modules/
+package-lock.json
