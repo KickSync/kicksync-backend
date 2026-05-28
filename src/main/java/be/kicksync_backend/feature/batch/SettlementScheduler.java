@@ -18,11 +18,11 @@ public class SettlementScheduler {
     private final JobLauncher jobLauncher;
     private final Job settlementJob;
 
-    @Scheduled(cron = "0 * * * * ?") // 매분 실행 (테스트용)
+    @Scheduled(cron = "1 * 5 * * ?")
     @SchedulerLock(name = "dailySettlementTask")
     public void runSettlementJob() throws Exception {
         long startTime = System.currentTimeMillis();
-        LocalDate settlementDate = LocalDate.now().minusDays(4);
+        LocalDate settlementDate = LocalDate.now().minusDays(1);
 
         log.info("=== 일일 정산 배치 작업 시작 ===");
         log.info("정산 대상 날짜: {}", settlementDate);
@@ -40,15 +40,16 @@ public class SettlementScheduler {
             if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
                 log.info("=== 일일 정산 배치 작업 완료 ===");
                 log.info("실행 상태: {}", jobExecution.getStatus());
-                log.info("실행 시간: {}ms", duration);
+                log.info("실행 시간: {}ms (약 {}초)", duration, duration / 1000);
 
                 // Step별 실행 결과 로그
                 for (StepExecution stepExecution : jobExecution.getStepExecutions()) {
-                    log.info("Step: {}, 읽은 건수: {}, 처리한 건수: {}, 저장한 건수: {}",
+                    log.info("Step: {}, 읽은 건수: {}, 처리한 건수: {}, 저장한 건수: {}, 커밋 건수: {}",
                             stepExecution.getStepName(),
                             stepExecution.getReadCount(),
-                            stepExecution.getProcessSkipCount(),
-                            stepExecution.getWriteCount());
+                            stepExecution.getFilterCount(),
+                            stepExecution.getWriteCount(),
+                            stepExecution.getCommitCount());
                 }
             } else {
                 log.error("=== 일일 정산 배치 작업 실패 ===");
