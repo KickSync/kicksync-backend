@@ -150,7 +150,7 @@ class PartnerProductControllerTest {
     @DisplayName("상품 수정 성공 테스트")
     void updateProductSuccess() throws Exception {
         // given
-        ProductUpdateRequestDto requestDto = new ProductUpdateRequestDto("Updated Name", "Updated Model", LocalDate.now(), BigDecimal.valueOf(120000));
+        ProductUpdateRequestDto requestDto = new ProductUpdateRequestDto("Updated Name", "Updated Model", LocalDate.now(), BigDecimal.valueOf(120000), 100);
         ProductResponseDto responseDto = ProductResponseDto.builder()
                 .id(1L)
                 .name("Updated Name")
