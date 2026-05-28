@@ -12,7 +12,7 @@ services:
           cpus: '0.5'
           memory: 1024M
     environment:
-      - JAVA_OPTS=-Xms1024m -Xmx1024m -XX:+UseZGC
+      - JAVA_OPTS=-Xms1024m -Xmx1024m -XX:+UseZGC -javaagent:/app/scouter/agent.java/scouter.agent.jar -Dscouter.config=/app/scouter/agent.java/conf/scouter.conf -Dobj_name=kicksyncTomcat --add-opens java.base/java.lang=ALL-UNNAMED
       - SPRING_PROFILES_ACTIVE=prod
       - DATABASE_URL=${DB_URL}
       - DATABASE_USERNAME=${DB_USER}
@@ -25,6 +25,10 @@ services:
       - IAMPORT_KEY=${IAMPORT_KEY}
       - IAMPORT_SECRET_KEY=${IAMPORT_SECRET}
       - TOSS_KEY=${TOSS_KEY}
+    volumes:
+      - /Users/gminnimk/Downloads/util/scouter/scouter:/app/scouter
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8080:8080"
     depends_on:
@@ -53,7 +57,7 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
     networks:

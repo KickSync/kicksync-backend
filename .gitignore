@@ -57,6 +57,7 @@ Thumbs.db
 .antigravitycli/
 /.clauderc
 conductor/
+MEMORY.md
 
 ### Node / Frontend Configs (For plugins/tools) ###
 node_modules/
