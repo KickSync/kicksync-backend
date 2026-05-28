@@ -12,15 +12,11 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "settlements", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_partner_settlement_date", columnNames = {"partner_id", "settlement_date"})
-})
+@Table(name = "settlements")
+@IdClass(SettlementId.class)
 public class Settlement extends BaseTimeEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(name = "partner_id", nullable = false)
     private Long partnerId;
 
@@ -32,6 +28,7 @@ public class Settlement extends BaseTimeEntity {
     @Builder.Default
     private SettlementStatus status = SettlementStatus.PENDING;
 
+    @Id
     @Column(name = "settlement_date")
     private LocalDate settlementDate;
 }
