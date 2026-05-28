@@ -79,6 +79,7 @@ public class DistributedLockAop {
             lockNameLog = lockKey;
         }
 
+        boolean isLocked = false;
         try {
             boolean available = lock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(), distributedLock.timeUnit());
             if (!available) {
@@ -86,6 +87,7 @@ public class DistributedLockAop {
                 throw new CustomException(ErrorCode.LOCK_ACQUISITION_FAILED);
             }
 
+            isLocked = true;
             log.info("[Redisson Lock] 락 획득 성공: {} (User={})", lockNameLog, userId);
             return aopForTransaction.proceed(joinPoint);
 
@@ -93,11 +95,13 @@ public class DistributedLockAop {
             Thread.currentThread().interrupt();
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         } finally {
-            try {
-                lock.unlock();
-                log.info("[Redisson Lock] 락 해제 완료: {} (User={})", lockNameLog, userId);
-            } catch (IllegalMonitorStateException e) {
-                log.info("[Redisson Lock] 이미 해제된 락입니다: {} (User={})", lockNameLog, userId);
+            if (isLocked) {
+                try {
+                    lock.unlock();
+                    log.info("[Redisson Lock] 락 해제 완료: {} (User={})", lockNameLog, userId);
+                } catch (Exception e) {
+                    log.warn("[Redisson Lock] 락 해제 중 예외 발생: {} (User={})", lockNameLog, userId, e);
+                }
             }
         }
     }
