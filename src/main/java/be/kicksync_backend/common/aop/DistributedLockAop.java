@@ -81,16 +81,15 @@ public class DistributedLockAop {
 
         boolean isLocked = false;
         try {
-            boolean available = lock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(), distributedLock.timeUnit());
-            if (!available) {
+            isLocked = lock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(), distributedLock.timeUnit());
+            if (!isLocked) {
                 log.warn("[Redisson Lock] 락 획득 실패: {} (User={})", lockNameLog, userId);
                 throw new CustomException(ErrorCode.LOCK_ACQUISITION_FAILED);
             }
-
-            isLocked = true;
+            
             log.info("[Redisson Lock] 락 획득 성공: {} (User={})", lockNameLog, userId);
             return aopForTransaction.proceed(joinPoint);
-
+            
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -100,7 +99,7 @@ public class DistributedLockAop {
                     lock.unlock();
                     log.info("[Redisson Lock] 락 해제 완료: {} (User={})", lockNameLog, userId);
                 } catch (Exception e) {
-                    log.warn("[Redisson Lock] 락 해제 중 예외 발생: {} (User={})", lockNameLog, userId, e);
+                    log.error("[Redisson Lock] 락 해제 실패: {} (Error: {})", lockNameLog, e.getMessage());
                 }
             }
         }
