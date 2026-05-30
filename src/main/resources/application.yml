@@ -69,3 +69,22 @@ springdoc:
   swagger-ui:
     operations-sorter: method
     doc-expansion: none
+
+resilience4j:
+  retry:
+    instances:
+      paymentClient:
+        max-attempts: 3
+        wait-duration: 1000ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2.0
+  circuitbreaker:
+    instances:
+      paymentClient:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50.0
+        wait-duration-in-open-state: 60000ms
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
