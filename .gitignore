@@ -62,3 +62,6 @@ MEMORY.md
 ### Node / Frontend Configs (For plugins/tools) ###
 node_modules/
 package-lock.json
+
+### Design Specifications (Brainstorming Docs) ###
+docs/superpowers/specs/
