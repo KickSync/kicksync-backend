@@ -1,5 +1,6 @@
 package be.kicksync_backend.feature.product.controller;
 
+import be.kicksync_backend.common.annotation.RateLimit;
 import be.kicksync_backend.common.dto.ApiResponse;
 import be.kicksync_backend.common.dto.ResponseText;
 import be.kicksync_backend.common.dto.RestPage;
@@ -45,6 +46,7 @@ public class ProductController {
         @Parameter(name = "sort", description = "정렬 기준 (예: id,desc)", in = ParameterIn.QUERY, schema = @Schema(type = "string", defaultValue = "id,desc"))
     })
     @GetMapping
+    @RateLimit(key = "all-products", limit = 100, window = 60)
     public ResponseEntity<ApiResponse<RestPage<ProductResponseDto>>> getAllProducts(
             @Parameter(hidden = true) @PageableDefault(size = 20, sort = "id") Pageable pageable) {
         RestPage<ProductResponseDto> products = productService.getAllProducts(pageable);
@@ -68,6 +70,7 @@ public class ProductController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음")
     })
     @GetMapping("/{productId}")
+    @RateLimit(key = "single-product", limit = 100, window = 60)
     public ResponseEntity<ApiResponse<ProductResponseDto>> getProduct(@PathVariable Long productId) {
         ProductResponseDto product = productService.getProduct(productId);
         ApiResponse<ProductResponseDto> response = ApiResponse.<ProductResponseDto>builder()
