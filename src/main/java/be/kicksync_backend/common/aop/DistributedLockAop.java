@@ -13,6 +13,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
@@ -34,6 +36,7 @@ public class DistributedLockAop {
 
     private final RedissonClient redissonClient;
     private final AopForTransaction aopForTransaction;
+    private final Environment environment;
 
     @Around("@annotation(be.kicksync_backend.common.annotation.DistributedLock)")
     public Object lock(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -56,23 +59,32 @@ public class DistributedLockAop {
                 throw new CustomException(ErrorCode.LOCK_ACQUISITION_FAILED);
             }
             
-            List<RLock> locks = new ArrayList<>();
-            List<String> lockNames = new ArrayList<>();
-
-            // Deadlock 방지를 위해 Key 정렬
-            List<String> sortedKeys = collection.stream()
-                    .map(Object::toString)
-                    .sorted()
-                    .toList();
-
-            for (String item : sortedKeys) {
+            if (collection.size() == 1) {
+                String item = collection.iterator().next().toString();
                 String lockKey = REDISSON_LOCK_PREFIX + "product:" + item;
-                locks.add(redissonClient.getLock(lockKey));
-                lockNames.add(lockKey);
-            }
+                lock = redissonClient.getLock(lockKey);
+                lockNameLog = lockKey;
+            } else {
+                List<RLock> locks = new ArrayList<>();
+                List<String> lockNames = new ArrayList<>();
 
-            lock = redissonClient.getMultiLock(locks.toArray(new RLock[0]));
-            lockNameLog = "MultiLock(" + lockNames + ")";
+                // Deadlock 방지를 위해 Key 정렬 (Long 숫자 크기 기준 정렬 보장)
+                List<String> sortedKeys = collection.stream()
+                        .map(Object::toString)
+                        .map(Long::parseLong)
+                        .sorted()
+                        .map(Object::toString)
+                        .toList();
+
+                for (String item : sortedKeys) {
+                    String lockKey = REDISSON_LOCK_PREFIX + "product:" + item;
+                    locks.add(redissonClient.getLock(lockKey));
+                    lockNames.add(lockKey);
+                }
+
+                lock = redissonClient.getMultiLock(locks.toArray(new RLock[0]));
+                lockNameLog = "MultiLock(" + lockNames + ")";
+            }
         } else {
             String lockKey = REDISSON_LOCK_PREFIX + "product:" + dynamicValue.toString();
             lock = redissonClient.getLock(lockKey);
@@ -81,7 +93,11 @@ public class DistributedLockAop {
 
         boolean isLocked = false;
         try {
-            isLocked = lock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(), distributedLock.timeUnit());
+            long waitTime = distributedLock.waitTime();
+            if (environment.acceptsProfiles(Profiles.of("prod", "tobe"))) {
+                waitTime = 50;
+            }
+            isLocked = lock.tryLock(waitTime, distributedLock.leaseTime(), distributedLock.timeUnit());
             if (!isLocked) {
                 log.warn("[Redisson Lock] 락 획득 실패: {} (User={})", lockNameLog, userId);
                 throw new CustomException(ErrorCode.LOCK_ACQUISITION_FAILED);
