@@ -12,8 +12,8 @@ services:
           cpus: '0.5'
           memory: 1024M
     environment:
-      - JAVA_OPTS=-Xms1024m -Xmx1024m -XX:+UseZGC -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -javaagent:/app/scouter/agent.java/scouter.agent.jar -Dscouter.config=/app/scouter/agent.java/conf/scouter.conf -Dobj_name=kicksyncTomcat --add-opens java.base/java.lang=ALL-UNNAMED
-      - SPRING_PROFILES_ACTIVE=prod
+      - JAVA_OPTS=-Xms1024m -Xmx1024m -XX:+UseZGC -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -javaagent:/app/scouter/agent.java/scouter.agent.jar -Dscouter.config=/app/scouter/agent.java/conf/scouter.conf -Dobj_name=kicksync-prod-01 -Dscouter.host.name=kicksync-host --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.management/java.lang.management=ALL-UNNAMED --add-opens java.management/sun.management=ALL-UNNAMED --add-opens jdk.management/com.sun.management=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
       - DATABASE_URL=${DB_URL}
       - DATABASE_USERNAME=${DB_USER}
       - DATABASE_PASSWORD=${DB_PASSWORD}

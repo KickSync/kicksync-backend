@@ -78,6 +78,9 @@ resilience4j:
         wait-duration: 1000ms
         enable-exponential-backoff: true
         exponential-backoff-multiplier: 2.0
+        retry-exceptions:
+          - java.io.IOException
+          - com.siot.IamportRestClient.exception.IamportResponseException
   circuitbreaker:
     instances:
       paymentClient:

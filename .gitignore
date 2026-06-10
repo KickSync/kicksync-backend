@@ -65,3 +65,7 @@ package-lock.json
 
 ### Design Specifications (Brainstorming Docs) ###
 docs/superpowers/specs/
+
+/tests/load/token_list.txt
+/tests/load/token.txt
+/tests/load/metrics_logs/
