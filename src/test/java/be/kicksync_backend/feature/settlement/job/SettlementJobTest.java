@@ -1,6 +1,6 @@
 package be.kicksync_backend.feature.settlement.job;
 
-import be.kicksync_backend.feature.settlement.batch.SettlementBatchConfig;
+import be.kicksync_backend.feature.batch.SettlementJobConfig;
 import be.kicksync_backend.feature.order.entity.OrderItem;
 import be.kicksync_backend.feature.partner.entity.Partner;
 import be.kicksync_backend.feature.partner.repository.PartnerRepository;
@@ -38,7 +38,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBatchTest
-@SpringBootTest(classes = {be.kicksync_backend.KicksyncBackendApplication.class, SettlementBatchConfig.class})
+@SpringBootTest(classes = {be.kicksync_backend.KicksyncBackendApplication.class, SettlementJobConfig.class})
 @TestPropertySource(properties = {
         "spring.batch.job.enabled=false",
         "jwt.secret.key=dGVzdC1zZWNyZXQta2V5LWZvci10ZXN0cy13aGljaC1tdXN0LWJlLWxvbmctZW5vdWdo",
