@@ -69,3 +69,10 @@ docs/superpowers/specs/
 /tests/load/token_list.txt
 /tests/load/token.txt
 /tests/load/metrics_logs/
+
+### Project Custom Exclusions ###
+/docs/
+/src/main/java/be/kicksync_backend/feature/settlement/controller/SettlementBatchController.java
+/src/main/resources/application-asis.yml
+/src/main/resources/application-tobe.yml
+/tests/load/*.sh

@@ -8,6 +8,7 @@ import be.kicksync_backend.feature.payment.repository.PaymentRepository;
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
 
+import java.util.List;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
@@ -65,7 +66,7 @@ public class PaymentTransactionService {
     }
 
     @Transactional
-    public Payment completePaymentVerification(com.siot.IamportRestClient.response.Payment paymentInfo, java.util.List<Order> orders) {
+    public Payment completePaymentVerification(com.siot.IamportRestClient.response.Payment paymentInfo, List<Order> orders) {
         Payment payment = savePaymentRecord(paymentInfo, orders);
         for (Order order : orders) {
             order.processPaymentSuccess();

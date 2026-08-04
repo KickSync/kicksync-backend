@@ -3,6 +3,7 @@ package be.kicksync_backend.feature.batch;
 import be.kicksync_backend.feature.batch.listener.PerformanceStepExecutionListener;
 import be.kicksync_backend.feature.batch.listener.SettlementSkipListener;
 import be.kicksync_backend.feature.batch.partitioner.PartnerIdRangePartitioner;
+import be.kicksync_backend.feature.order.entity.Order;
 import be.kicksync_backend.feature.order.entity.OrderStatus;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.partition.support.Partitioner;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
@@ -26,6 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PessimisticLockingFailureException;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -107,10 +110,10 @@ public class SettlementJobConfig {
     @Bean
     public Step workerStep(JobRepository jobRepository,
                            PlatformTransactionManager transactionManager,
-                           JpaPagingItemReader<be.kicksync_backend.feature.order.entity.Order> settlementItemReader,
-                           ItemWriter<be.kicksync_backend.feature.order.entity.Order> settlementItemWriter) {
+                           JpaPagingItemReader<Order> settlementItemReader,
+                           ItemWriter<Order> settlementItemWriter) {
         return new StepBuilder("workerStep", jobRepository)
-                .<be.kicksync_backend.feature.order.entity.Order, be.kicksync_backend.feature.order.entity.Order>chunk(1000, transactionManager)
+                .<Order, Order>chunk(1000, transactionManager)
                 .reader(settlementItemReader)
                 .writer(settlementItemWriter)
                 .listener(performanceStepExecutionListener)
@@ -127,7 +130,7 @@ public class SettlementJobConfig {
 
     @Bean
     @StepScope
-    public JpaPagingItemReader<be.kicksync_backend.feature.order.entity.Order> settlementItemReader(
+    public JpaPagingItemReader<Order> settlementItemReader(
             @Value("#{jobParameters['settlementDate'] ?: null}") String settlementDateStr,
             @Value("#{jobParameters['startDate'] ?: null}") String startDateStr,
             @Value("#{jobParameters['endDate'] ?: null}") String endDateStr,
@@ -167,7 +170,7 @@ public class SettlementJobConfig {
 
         queryStringBuilder.append("ORDER BY o.id");
 
-        return new JpaPagingItemReaderBuilder<be.kicksync_backend.feature.order.entity.Order>()
+        return new JpaPagingItemReaderBuilder<Order>()
                 .name("settlementItemReader")
                 .entityManagerFactory(entityManagerFactory)
                 .queryString(queryStringBuilder.toString())
@@ -177,14 +180,14 @@ public class SettlementJobConfig {
     }
 
     @Bean
-    public ItemWriter<be.kicksync_backend.feature.order.entity.Order> settlementItemWriter() {
-        return new ItemWriter<be.kicksync_backend.feature.order.entity.Order>() {
-            private org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate jdbcTemplate;
+    public ItemWriter<Order> settlementItemWriter() {
+        return new ItemWriter<Order>() {
+            private NamedParameterJdbcTemplate jdbcTemplate;
 
             @Override
-            public void write(org.springframework.batch.item.Chunk<? extends be.kicksync_backend.feature.order.entity.Order> chunk) throws Exception {
+            public void write(Chunk<? extends Order> chunk) throws Exception {
                 if (jdbcTemplate == null) {
-                    jdbcTemplate = new org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate(dataSource);
+                    jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
                 }
 
                 String sql = "INSERT INTO settlements (partner_id, total_amount, status, settlement_date, created_at, updated_at) " +
@@ -194,7 +197,7 @@ public class SettlementJobConfig {
                              "updated_at = NOW()";
 
                 LocalDate currentDate = LocalDate.now();
-                for (be.kicksync_backend.feature.order.entity.Order order : chunk.getItems()) {
+                for (Order order : chunk.getItems()) {
                     Map<String, Object> params = new HashMap<>();
                     params.put("partnerId", order.getPartnerId());
                     params.put("totalAmount", order.getFinalPrice());

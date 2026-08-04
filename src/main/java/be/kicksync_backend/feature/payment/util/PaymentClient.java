@@ -33,14 +33,14 @@ public class PaymentClient {
         this.iamportClient = new IamportClient(apiKey, apiSecret);
     }
 
-    @CircuitBreaker(name = "paymentClient", fallbackMethod = "fallbackGetPaymentInfo")
-    @Retry(name = "paymentClient")
+    @CircuitBreaker(name = "paymentReadClient", fallbackMethod = "fallbackGetPaymentInfo")
+    @Retry(name = "paymentReadClient")
     public IamportResponse<Payment> getPaymentInfoByImpUid(String impUid) throws IamportResponseException, IOException {
         return iamportClient.paymentByImpUid(impUid);
     }
 
-    @CircuitBreaker(name = "paymentClient", fallbackMethod = "fallbackCancelPayment")
-    @Retry(name = "paymentClient")
+    @CircuitBreaker(name = "paymentWriteClient", fallbackMethod = "fallbackCancelPayment")
+    @Retry(name = "paymentWriteClient")
     public IamportResponse<Payment> cancelPaymentByImpUid(String impUid, BigDecimal amount, String reason, BigDecimal checksum) throws IamportResponseException, IOException {
         CancelData cancelData = new CancelData(impUid, true, amount);
         cancelData.setReason(reason);

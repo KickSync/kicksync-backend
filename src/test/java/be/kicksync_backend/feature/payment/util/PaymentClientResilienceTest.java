@@ -42,12 +42,13 @@ public class PaymentClientResilienceTest {
         ReflectionTestUtils.setField(paymentClient, "iamportClient", mockIamportClient);
         
         // Reset registries to avoid state leakage between tests
-        circuitBreakerRegistry.circuitBreaker("paymentClient").reset();
+        circuitBreakerRegistry.circuitBreaker("paymentReadClient").reset();
+        circuitBreakerRegistry.circuitBreaker("paymentWriteClient").reset();
     }
 
     @Test
-    @DisplayName("서킷 브레이커: 5번 연속 실패 시 서킷이 OPEN되고 후속 요청은 즉시 Fail-Fast 차단한다")
-    void testCircuitBreakerOpenOnPersistentFailures() throws Exception {
+    @DisplayName("Read 서킷 브레이커: 5번 연속 실패 시 Read 서킷이 OPEN되고 후속 요청은 즉시 Fail-Fast 차단한다")
+    void testReadCircuitBreakerOpenOnPersistentFailures() throws Exception {
         // given
         when(mockIamportClient.paymentByImpUid(anyString())).thenThrow(new IOException("Connection timed out"));
 
@@ -58,14 +59,18 @@ public class PaymentClientResilienceTest {
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PAYMENT_VERIFICATION_FAILED);
         }
 
-        // 서킷 브레이커 상태가 OPEN으로 변경되었는지 검증
-        CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker("paymentClient");
-        assertThat(circuitBreaker.getState()).isEqualTo(CircuitBreaker.State.OPEN);
+        // Read 서킷 브레이커 상태가 OPEN으로 변경되었는지 검증
+        CircuitBreaker readCircuitBreaker = circuitBreakerRegistry.circuitBreaker("paymentReadClient");
+        assertThat(readCircuitBreaker.getState()).isEqualTo(CircuitBreaker.State.OPEN);
 
-        // 서킷 오픈 상태에서 요청 시 MockIamportClient 호출 없이 즉시 Fail-Fast 차단 (CallNotPermittedException 발생 및 fallback 적용)
+        // Read 서킷 오픈 상태에서 요청 시 MockIamportClient 호출 없이 즉시 Fail-Fast 차단 (fallback 적용)
         assertThatThrownBy(() -> paymentClient.getPaymentInfoByImpUid("imp_123"))
                 .isInstanceOf(CustomException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PAYMENT_VERIFICATION_FAILED);
+
+        // Read 서킷이 OPEN되어도 Write 서킷(paymentWriteClient)은 CLOSED 상태를 유지하여 스코프가 격리됨을 검증
+        CircuitBreaker writeCircuitBreaker = circuitBreakerRegistry.circuitBreaker("paymentWriteClient");
+        assertThat(writeCircuitBreaker.getState()).isEqualTo(CircuitBreaker.State.CLOSED);
 
         // 실제 mockIamportClient는 리트라이 포함 최대 15번까지만 호출되어야 하고 서킷 오픈 후엔 호출 안됨
         verify(mockIamportClient, atMost(15)).paymentByImpUid(anyString());
