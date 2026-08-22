@@ -1,5 +1,7 @@
 package be.kicksync_backend.feature.settlement.batch;
 
+import be.kicksync_backend.feature.order.entity.OrderStatus;
+import be.kicksync_backend.feature.settlement.entity.SettlementStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -119,7 +121,7 @@ public class SettlementBatchConfig {
         log.info("[Reader] 파티션 범위 스캔 시작: minId={}, maxId={}", minId, maxId);
 
         String sql = "SELECT id, partner_id, final_price FROM orders " +
-                     "WHERE status = 'PURCHASE_CONFIRMED' " +
+                     "WHERE status = '" + OrderStatus.PURCHASE_CONFIRMED.name() + "' " +
                      "AND partner_id BETWEEN ? AND ? " +
                      "ORDER BY partner_id";
 
@@ -171,7 +173,7 @@ public class SettlementBatchConfig {
 
             // 3. High-Performance Bulk Upsert
             String sql = "INSERT INTO settlements (partner_id, total_amount, status, settlement_date, created_at, updated_at) " +
-                         "VALUES (:partnerId, :totalAmount, 'PENDING', :currentDate, NOW(), NOW()) " +
+                         "VALUES (:partnerId, :totalAmount, '" + SettlementStatus.PENDING.name() + "', :currentDate, NOW(), NOW()) " +
                          "ON DUPLICATE KEY UPDATE " +
                          "total_amount = total_amount + VALUES(total_amount), " +
                          "updated_at = NOW()";
@@ -189,7 +191,7 @@ public class SettlementBatchConfig {
 
         @Override
         public Map<String, ExecutionContext> partition(int gridSize) {
-            String query = "SELECT MIN(partner_id), MAX(partner_id) FROM orders WHERE status = 'PURCHASE_CONFIRMED'";
+            String query = "SELECT MIN(partner_id), MAX(partner_id) FROM orders WHERE status = '" + OrderStatus.PURCHASE_CONFIRMED.name() + "'";
             Map<String, ExecutionContext> result = new HashMap<>();
             try {
                 Map<String, Object> minMax = jdbcTemplate.queryForMap(query);
