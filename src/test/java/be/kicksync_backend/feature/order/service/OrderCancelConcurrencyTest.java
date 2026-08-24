@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import be.kicksync_backend.feature.partner.entity.Partner;
 import be.kicksync_backend.feature.partner.repository.PartnerRepository;
+import be.kicksync_backend.feature.payment.repository.PaymentRepository;
 
 @SpringBootTest
 @TestPropertySource(properties = {
@@ -60,6 +61,9 @@ public class OrderCancelConcurrencyTest {
     @Autowired
     private PartnerRepository partnerRepository;
 
+    @Autowired
+    private PaymentRepository paymentRepository;
+
     private Product testProduct;
     private User testUser;
     private Partner testPartner;
@@ -71,6 +75,10 @@ public class OrderCancelConcurrencyTest {
                 .name("Test Partner")
                 .businessNumber("123-45-67890")
                 .commissionRate(new BigDecimal("0.05"))
+                .contactEmail("partner@test.com")
+                .bankName("Bank")
+                .accountNumber("1234-5678")
+                .accountHolder("Holder")
                 .build();
         partnerRepository.saveAndFlush(testPartner);
 
@@ -112,6 +120,7 @@ public class OrderCancelConcurrencyTest {
 
     @AfterEach
     void tearDown() {
+        paymentRepository.deleteAll();
         orderItemRepository.deleteAll();
         orderRepository.deleteAll();
         productRepository.deleteAll();

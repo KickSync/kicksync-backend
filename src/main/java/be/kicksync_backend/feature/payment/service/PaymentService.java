@@ -35,7 +35,6 @@ public class PaymentService {
     private final PaymentClient paymentClient;
     private final PaymentTransactionService paymentTransactionService;
 
-    @Transactional
     public PaymentResponseDto verifyPayment(PaymentRequestDto requestDto, Long userId) throws IamportResponseException, IOException {
         String merchantUid = requestDto.getMerchantUid();
         

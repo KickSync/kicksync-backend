@@ -39,9 +39,12 @@ public class RefreshTokenService {
         String normalized = token == null ? "" : token.trim();
         if (normalized.isEmpty()) return Optional.empty();
 
-        return userRepository.findAll().stream()
-                .filter(user -> redisTokenService.validateRefreshToken(user.getId(), normalized))
-                .findFirst()
+        Long userId = redisTokenService.getUserIdByRefreshToken(normalized);
+        if (userId == null) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+        return userRepository.findById(userId)
                 .map(user -> {
                     // Delete old token and create new one
                     redisTokenService.deleteRefreshToken(user.getId());
@@ -50,7 +53,7 @@ public class RefreshTokenService {
                     return new JwtResponseDto(newAccessToken, newRefreshToken);
                 })
                 .or(() -> {
-                    throw new CustomException(ErrorCode.INVALID_TOKEN);
+                    throw new CustomException(ErrorCode.USER_NOT_FOUND);
                 });
     }
 

@@ -6,7 +6,7 @@ import org.springframework.batch.core.SkipListener;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
+// @Component
 public class SettlementSkipListener implements SkipListener<PartnerSettlementDto, Object> {
 
     @Override

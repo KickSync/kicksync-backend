@@ -66,6 +66,10 @@ public class OrderServiceConcurrencyTest {
                 .name("Test Partner")
                 .businessNumber("123-45-67890")
                 .commissionRate(BigDecimal.valueOf(0.05))
+                .contactEmail("partner@test.com")
+                .bankName("Bank")
+                .accountNumber("1234-5678")
+                .accountHolder("Holder")
                 .build();
         partnerRepository.saveAndFlush(testPartner);
 

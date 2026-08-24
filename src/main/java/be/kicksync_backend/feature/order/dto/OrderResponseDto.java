@@ -34,6 +34,9 @@ public class OrderResponseDto {
     @Schema(description = "주문 번호 (결제 연동용)", example = "1")
     private final String merchantUid;  // 결제 요청을 위한 주문 고유 식별자
 
+    @Schema(description = "운송장 번호", example = "1234567890")
+    private final String trackingNumber;
+
     public OrderResponseDto(Order order) {
         this.orderId = order.getId();
         this.finalPrice = order.getFinalPrice();
@@ -43,6 +46,7 @@ public class OrderResponseDto {
                 .map(OrderItemResponseDto::new)
                 .collect(Collectors.toList());
         this.merchantUid = order.getMerchantUid();
+        this.trackingNumber = order.getTrackingNumber();
     }
 
     public static OrderResponseDto from(Order order) {

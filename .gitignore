@@ -40,6 +40,39 @@ out/
 /gradle.properties
 /src/main/resources/application-local.yml
 /src/test/resources/application.yml
-
+application-test.yml
 .env
+
+### System Files (macOS & Windows) ###
 .DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+### AI & Agentic CLI Metadata (DO NOT COMMIT) ###
+.gemini/
+.gemini_security/
+.claude/
+.serena/
+.antigravitycli/
+/.clauderc
+conductor/
+MEMORY.md
+
+### Node / Frontend Configs (For plugins/tools) ###
+node_modules/
+package-lock.json
+
+### Design Specifications (Brainstorming Docs) ###
+docs/superpowers/specs/
+
+/tests/load/token_list.txt
+/tests/load/token.txt
+/tests/load/metrics_logs/
+
+### Project Custom Exclusions ###
+/docs/
+/src/main/java/be/kicksync_backend/feature/settlement/controller/SettlementBatchController.java
+/src/main/resources/application-asis.yml
+/src/main/resources/application-tobe.yml
+/tests/load/*.sh

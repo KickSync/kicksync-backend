@@ -1,0 +1,26 @@
+# [빌드 결과물 및 의존성]
+node_modules/
+target/
+build/
+bin/
+out/
+dist/
+.venv/
+.gradle/
+.idea/
+
+# [소스 코드 외 부수적인 파일]
+.git/
+.serena/
+*.log
+*.tmp
+*.class
+*.exe
+backup.sql
+token.txt
+
+# [대용량 데이터 및 문서]
+docs/
+*.pdf
+# *.md (Optional: Keep GEMINI.md but ignore others if needed)
+vendor/

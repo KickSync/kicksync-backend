@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = ProductAdminController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, JwtAccessDeniedHandler.class, JwtAuthenticationEntryPoint.class})
 class ProductAdminControllerTest {
 
     @Autowired
@@ -55,12 +55,6 @@ class ProductAdminControllerTest {
 
     @MockitoBean
     private RedisTokenService redisTokenService;
-
-    @MockitoBean
-    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-
-    @MockitoBean
-    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     @Test
     @DisplayName("관리자 상품 생성 성공 테스트")

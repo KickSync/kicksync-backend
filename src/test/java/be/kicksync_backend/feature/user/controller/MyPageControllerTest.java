@@ -9,7 +9,6 @@ import be.kicksync_backend.feature.partner.repository.PartnerRepository;
 import be.kicksync_backend.feature.payment.repository.PaymentRepository;
 import be.kicksync_backend.feature.product.entity.Product;
 import be.kicksync_backend.feature.product.repository.ProductRepository;
-import be.kicksync_backend.feature.token.RefreshTokenRepository;
 import be.kicksync_backend.feature.user.dto.ProfileUpdateRequestDto;
 import be.kicksync_backend.feature.user.dto.UserLoginRequestDto;
 import be.kicksync_backend.feature.user.entity.User;
@@ -64,9 +63,6 @@ class MyPageControllerTest {
     private OrderRepository orderRepository;
 
     @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
-
-    @Autowired
     private PaymentRepository paymentRepository;
 
     @Autowired
@@ -79,7 +75,6 @@ class MyPageControllerTest {
         paymentRepository.deleteAll();
         orderRepository.deleteAll();
         productRepository.deleteAll();
-        refreshTokenRepository.deleteAll();
         userRepository.deleteAll();
         partnerRepository.deleteAll();
 
@@ -91,6 +86,10 @@ class MyPageControllerTest {
                 .name("Test Partner")
                 .businessNumber("123-45-67890")
                 .commissionRate(BigDecimal.ZERO)
+                .contactEmail("partner@test.com")
+                .bankName("Bank")
+                .accountNumber("1234-5678")
+                .accountHolder("Holder")
                 .build();
         partnerRepository.saveAndFlush(partner);
 

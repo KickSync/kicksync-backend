@@ -1,7 +1,9 @@
 package be.kicksync_backend.feature.product.controller;
 
+import be.kicksync_backend.common.annotation.RateLimit;
 import be.kicksync_backend.common.dto.ApiResponse;
 import be.kicksync_backend.common.dto.ResponseText;
+import be.kicksync_backend.common.dto.RestPage;
 import be.kicksync_backend.feature.product.dto.ProductResponseDto;
 import be.kicksync_backend.feature.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,7 +14,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -45,10 +46,11 @@ public class ProductController {
         @Parameter(name = "sort", description = "정렬 기준 (예: id,desc)", in = ParameterIn.QUERY, schema = @Schema(type = "string", defaultValue = "id,desc"))
     })
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<ProductResponseDto>>> getAllProducts(
+    @RateLimit(key = "all-products", limit = 100, window = 60)
+    public ResponseEntity<ApiResponse<RestPage<ProductResponseDto>>> getAllProducts(
             @Parameter(hidden = true) @PageableDefault(size = 20, sort = "id") Pageable pageable) {
-        Page<ProductResponseDto> products = productService.getAllProducts(pageable);
-        ApiResponse<Page<ProductResponseDto>> response = ApiResponse.<Page<ProductResponseDto>>builder()
+        RestPage<ProductResponseDto> products = productService.getAllProducts(pageable);
+        ApiResponse<RestPage<ProductResponseDto>> response = ApiResponse.<RestPage<ProductResponseDto>>builder()
                 .msg(ResponseText.GET_PRODUCTS_SUCCESS.getMsg())
                 .statuscode(String.valueOf(HttpStatus.OK.value()))
                 .data(products)
@@ -68,6 +70,7 @@ public class ProductController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음")
     })
     @GetMapping("/{productId}")
+    @RateLimit(key = "single-product", limit = 100, window = 60)
     public ResponseEntity<ApiResponse<ProductResponseDto>> getProduct(@PathVariable Long productId) {
         ProductResponseDto product = productService.getProduct(productId);
         ApiResponse<ProductResponseDto> response = ApiResponse.<ProductResponseDto>builder()

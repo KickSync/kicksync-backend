@@ -12,13 +12,8 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
-@Table(
-    name = "settlements",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "uk_settlement_partner_date", columnNames = {"partner_id", "settlement_date"})
-    }
-)
-public class Settlement extends BaseTimeEntity {
+@Table(name = "settlement_error_logs")
+public class SettlementErrorLog extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,14 +22,12 @@ public class Settlement extends BaseTimeEntity {
     @Column(name = "partner_id", nullable = false)
     private Long partnerId;
 
-    @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
-    private BigDecimal totalAmount;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 20)
-    @Builder.Default
-    private SettlementStatus status = SettlementStatus.PENDING;
-
     @Column(name = "settlement_date", nullable = false)
     private LocalDate settlementDate;
+
+    @Column(name = "failed_amount", precision = 15, scale = 2)
+    private BigDecimal failedAmount;
+
+    @Column(name = "error_message", length = 1000)
+    private String errorMessage;
 }

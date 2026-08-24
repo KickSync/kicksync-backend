@@ -3,10 +3,8 @@ package be.kicksync_backend.feature.batch;
 import be.kicksync_backend.feature.batch.listener.PerformanceStepExecutionListener;
 import be.kicksync_backend.feature.batch.listener.SettlementSkipListener;
 import be.kicksync_backend.feature.batch.partitioner.PartnerIdRangePartitioner;
-import be.kicksync_backend.feature.batch.processor.SettlementItemProcessor;
+import be.kicksync_backend.feature.order.entity.Order;
 import be.kicksync_backend.feature.order.entity.OrderStatus;
-import be.kicksync_backend.feature.payment.dto.PartnerSettlementDto;
-import be.kicksync_backend.feature.settlement.entity.Settlement;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,10 +17,9 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.partition.support.Partitioner;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JpaPagingItemReader;
-import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PessimisticLockingFailureException;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -64,9 +62,9 @@ public class SettlementJobConfig {
     }
 
     @Bean
-    public Job settlementJob(JobRepository jobRepository, Step settlementManagerStep) {
+    public Job settlementJob(JobRepository jobRepository, Step workerStep) {
         return new JobBuilder("settlementJob", jobRepository)
-                .start(settlementManagerStep)
+                .start(workerStep)
                 .build();
     }
 
@@ -112,13 +110,11 @@ public class SettlementJobConfig {
     @Bean
     public Step workerStep(JobRepository jobRepository,
                            PlatformTransactionManager transactionManager,
-                           JpaPagingItemReader<PartnerSettlementDto> settlementItemReader,
-                           ItemProcessor<PartnerSettlementDto, Settlement> settlementItemProcessor,
-                           ItemWriter<Settlement> settlementItemWriter) {
+                           JpaPagingItemReader<Order> settlementItemReader,
+                           ItemWriter<Order> settlementItemWriter) {
         return new StepBuilder("workerStep", jobRepository)
-                .<PartnerSettlementDto, Settlement>chunk(1000, transactionManager)
+                .<Order, Order>chunk(1000, transactionManager)
                 .reader(settlementItemReader)
-                .processor(settlementItemProcessor)
                 .writer(settlementItemWriter)
                 .listener(performanceStepExecutionListener)
                 .faultTolerant()
@@ -134,42 +130,35 @@ public class SettlementJobConfig {
 
     @Bean
     @StepScope
-    public JpaPagingItemReader<PartnerSettlementDto> settlementItemReader(
+    public JpaPagingItemReader<Order> settlementItemReader(
             @Value("#{jobParameters['settlementDate'] ?: null}") String settlementDateStr,
             @Value("#{jobParameters['startDate'] ?: null}") String startDateStr,
             @Value("#{jobParameters['endDate'] ?: null}") String endDateStr,
-            @Value("#{jobParameters['partnerIds'] ?: null}") String partnerIdsStr,
-            @Value("#{stepExecutionContext['minId']}") Long minId,
-            @Value("#{stepExecutionContext['maxId']}") Long maxId) throws JobParametersInvalidException {
-
+            @Value("#{jobParameters['partnerIds'] ?: null}") String partnerIdsStr) throws JobParametersInvalidException {
+ 
         LocalDateTime startDate;
         LocalDateTime endDate;
-
+ 
         if (startDateStr != null && endDateStr != null) {
-            startDate = LocalDate.parse(startDateStr).atStartOfDay();
-            endDate = LocalDate.parse(endDateStr).atTime(LocalTime.MAX);
-        } else if (settlementDateStr != null) {
-            LocalDate settlementDate = LocalDate.parse(settlementDateStr);
-            startDate = settlementDate.atStartOfDay();
-            endDate = settlementDate.atTime(LocalTime.MAX);
-        } else {
-            throw new JobParametersInvalidException("settlementDate 또는 startDate, endDate 파라미터가 필요합니다.");
-        }
-
-        Map<String, Object> parameters = new HashMap<>();
-        List<OrderStatus> paidStatuses = Arrays.asList(OrderStatus.PAYMENT_COMPLETED, OrderStatus.PREPARING, OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.SETTLED);
-        parameters.put("paidStatuses", paidStatuses);
-        parameters.put("cancelledStatus", OrderStatus.CANCELLED);
-        parameters.put("startDate", startDate);
-        parameters.put("endDate", endDate);
-        parameters.put("minId", minId);
-        parameters.put("maxId", maxId);
+             startDate = LocalDate.parse(startDateStr).atStartOfDay();
+             endDate = LocalDate.parse(endDateStr).atTime(LocalTime.MAX);
+         } else if (settlementDateStr != null) {
+             LocalDate settlementDate = LocalDate.parse(settlementDateStr);
+             startDate = settlementDate.atStartOfDay();
+             endDate = settlementDate.atTime(LocalTime.MAX);
+         } else {
+             throw new JobParametersInvalidException("settlementDate 또는 startDate, endDate 파라미터가 필요합니다.");
+         }
+ 
+         Map<String, Object> parameters = new HashMap<>();
+         parameters.put("purchaseConfirmedStatus", OrderStatus.PURCHASE_CONFIRMED);
+         parameters.put("startDate", startDate);
+         parameters.put("endDate", endDate);
 
         StringBuilder queryStringBuilder = new StringBuilder();
-        queryStringBuilder.append(String.format("SELECT NEW %s(o.partnerId, SUM(CASE WHEN o.status IN :paidStatuses THEN o.finalPrice WHEN o.status = :cancelledStatus THEN -o.finalPrice ELSE 0 END)) ", PartnerSettlementDto.class.getName()));
-        queryStringBuilder.append("FROM Order o ");
-        queryStringBuilder.append("WHERE ((o.status IN :paidStatuses AND o.orderDate BETWEEN :startDate AND :endDate) OR (o.status = :cancelledStatus AND o.updatedAt BETWEEN :startDate AND :endDate)) ");
-        queryStringBuilder.append("AND o.partnerId BETWEEN :minId AND :maxId ");
+        queryStringBuilder.append("SELECT o FROM Order o ");
+        queryStringBuilder.append("WHERE o.status = :purchaseConfirmedStatus ");
+        queryStringBuilder.append("AND o.orderDate BETWEEN :startDate AND :endDate ");
 
         if (partnerIdsStr != null && !partnerIdsStr.isEmpty()) {
             List<Long> partnerIds = Arrays.stream(partnerIdsStr.split(","))
@@ -179,11 +168,9 @@ public class SettlementJobConfig {
             parameters.put("partnerIds", partnerIds);
         }
 
-        queryStringBuilder.append("GROUP BY o.partnerId ");
-        queryStringBuilder.append("ORDER BY o.partnerId");
+        queryStringBuilder.append("ORDER BY o.id");
 
-
-        return new JpaPagingItemReaderBuilder<PartnerSettlementDto>()
+        return new JpaPagingItemReaderBuilder<Order>()
                 .name("settlementItemReader")
                 .entityManagerFactory(entityManagerFactory)
                 .queryString(queryStringBuilder.toString())
@@ -193,27 +180,33 @@ public class SettlementJobConfig {
     }
 
     @Bean
-    @StepScope
-    public SettlementItemProcessor settlementItemProcessor(
-            @Value("#{jobParameters['settlementDate'] ?: null}") String settlementDateStr,
-            @Value("#{jobParameters['startDate'] ?: null}") String startDateStr,
-            @Value("#{jobParameters['endDate'] ?: null}") String endDateStr) {
+    public ItemWriter<Order> settlementItemWriter() {
+        return new ItemWriter<Order>() {
+            private NamedParameterJdbcTemplate jdbcTemplate;
 
-        LocalDate settlementDate;
-        if (settlementDateStr != null) {
-            settlementDate = LocalDate.parse(settlementDateStr);
-        } else if (startDateStr != null) {
-            settlementDate = LocalDate.parse(startDateStr);
-        } else {
-            settlementDate = LocalDate.now();
-        }
-        return new SettlementItemProcessor(settlementDate);
-    }
+            @Override
+            public void write(Chunk<? extends Order> chunk) throws Exception {
+                if (jdbcTemplate == null) {
+                    jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+                }
 
-    @Bean
-    public ItemWriter<Settlement> settlementItemWriter() {
-        return new JpaItemWriterBuilder<Settlement>()
-                .entityManagerFactory(entityManagerFactory)
-                .build();
+                String sql = "INSERT INTO settlements (partner_id, total_amount, status, settlement_date, created_at, updated_at) " +
+                             "VALUES (:partnerId, :totalAmount, 'PENDING', :currentDate, NOW(), NOW()) " +
+                             "ON DUPLICATE KEY UPDATE " +
+                             "total_amount = total_amount + VALUES(total_amount), " +
+                             "updated_at = NOW()";
+
+                LocalDate currentDate = LocalDate.now();
+                for (Order order : chunk.getItems()) {
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("partnerId", order.getPartnerId());
+                    params.put("totalAmount", order.getFinalPrice());
+                    params.put("currentDate", currentDate);
+
+                    // 건건이 동기식으로 update를 호출하여 네트워크 왕복 지연 및 Gap Lock 경합 유도
+                    jdbcTemplate.update(sql, params);
+                }
+            }
+        };
     }
 }
