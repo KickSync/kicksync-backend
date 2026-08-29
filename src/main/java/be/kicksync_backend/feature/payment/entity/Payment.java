@@ -1,6 +1,6 @@
 package be.kicksync_backend.feature.payment.entity;
 
-import be.kicksync_backend.common.entity.BaseTimeEntity;
+import be.kicksync_backend.common.entity.BaseEntity;
 import be.kicksync_backend.feature.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "payments")
-public class Payment extends BaseTimeEntity {
+public class Payment extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

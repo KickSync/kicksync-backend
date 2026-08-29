@@ -169,9 +169,10 @@ class OrderFacadeTest {
         // 1. PaymentService 호출 검증
         verify(paymentService).cancelPaymentForOrder(eq(orderId), eq("Simple Change"));
 
-        // 2. 최종 상태 검증
+        // 2. 최종 상태 및 취소 사유 검증
         Order finalOrder = orderRepository.findById(orderId).orElseThrow();
         assertThat(finalOrder.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        assertThat(finalOrder.getCancelReason()).isEqualTo("Simple Change");
         
         // 3. 재고 복구 검증
         Product finalProduct = productRepository.findById(product1.getId()).orElseThrow();

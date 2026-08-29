@@ -1,6 +1,6 @@
 package be.kicksync_backend.feature.product.entity;
 
-import be.kicksync_backend.common.entity.BaseTimeEntity;
+import be.kicksync_backend.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "drop_events")
-public class DropEvent extends BaseTimeEntity {
+public class DropEvent extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

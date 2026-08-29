@@ -150,11 +150,11 @@ public class OrderService {
             timeUnit = TimeUnit.SECONDS
     )
     @Transactional
-    public void finalizeCancelOrder(Long orderId, Long userId, List<Long> productIds) {
+    public void finalizeCancelOrder(Long orderId, Long userId, List<Long> productIds, String reason) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
-        order.cancel();
+        order.cancel(reason);
 
         for (OrderItem item : order.getOrderItems()) {
             Product product = productRepository.findById(item.getProduct().getId())
@@ -162,7 +162,12 @@ public class OrderService {
             product.increaseStock(item.getQuantity());
         }
 
-        log.info("주문 취소 완료 (DB 업데이트 & 재고 복구): orderId={}, userId={}", orderId, userId);
+        log.info("주문 취소 완료 (DB 업데이트 & 재고 복구, 사유: {}): orderId={}, userId={}", reason, orderId, userId);
+    }
+
+    @Transactional
+    public void finalizeCancelOrder(Long orderId, Long userId, List<Long> productIds) {
+        finalizeCancelOrder(orderId, userId, productIds, "사용자 요청에 의한 취소");
     }
 
     @Transactional(readOnly = true)

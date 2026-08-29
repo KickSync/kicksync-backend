@@ -1,6 +1,6 @@
 package be.kicksync_backend.feature.product.entity;
 
-import be.kicksync_backend.common.entity.BaseTimeEntity;
+import be.kicksync_backend.common.entity.BaseEntity;
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.feature.order.entity.OrderItem;
@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "products")
-public class Product extends BaseTimeEntity {
+public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

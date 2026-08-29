@@ -52,7 +52,7 @@ public class OrderFacade {
         }
 
         try {
-            orderService.finalizeCancelOrder(orderId, userId, productIds);
+            orderService.finalizeCancelOrder(orderId, userId, productIds, reason);
         } catch (Exception e) {
             log.error("주문 취소 최종 확정 실패 (심각한 불일치 위험): orderId={}, error={}", orderId, e.getMessage());
             throw e;

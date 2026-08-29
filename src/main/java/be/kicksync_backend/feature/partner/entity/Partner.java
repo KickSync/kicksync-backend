@@ -1,6 +1,6 @@
 package be.kicksync_backend.feature.partner.entity;
 
-import be.kicksync_backend.common.entity.BaseTimeEntity;
+import be.kicksync_backend.common.entity.BaseEntity;
 import be.kicksync_backend.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "partners")
-public class Partner extends BaseTimeEntity {
+public class Partner extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

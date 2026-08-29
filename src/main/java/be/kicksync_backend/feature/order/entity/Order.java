@@ -1,7 +1,7 @@
 package be.kicksync_backend.feature.order.entity;
 
 import be.kicksync_backend.common.entity.Address;
-import be.kicksync_backend.common.entity.BaseTimeEntity;
+import be.kicksync_backend.common.entity.BaseEntity;
 import be.kicksync_backend.common.exception.CustomException;
 import be.kicksync_backend.common.exception.ErrorCode;
 import be.kicksync_backend.feature.user.entity.User;
@@ -18,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "orders")
-public class Order extends BaseTimeEntity {
+public class Order extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -61,6 +61,9 @@ public class Order extends BaseTimeEntity {
     @Column
     private String trackingNumber;
 
+    @Column(name = "cancel_reason", length = 255)
+    private String cancelReason;
+
     @Builder
     public Order(User user, Address address, String receiverName, String receiverPhone, String requestMessage, List<OrderItem> orderItems, Long partnerId, String merchantUid, String trackingNumber) {
         this.user = user;
@@ -88,7 +91,7 @@ public class Order extends BaseTimeEntity {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public void cancel() {
+    public void cancel(String cancelReason) {
         if (status == OrderStatus.SHIPPED || status == OrderStatus.DELIVERED) {
             throw new CustomException(ErrorCode.ORDER_CANCEL_NOT_ALLOWED_SHIPPED);
         }
@@ -96,6 +99,11 @@ public class Order extends BaseTimeEntity {
             throw new CustomException(ErrorCode.ORDER_ALREADY_CANCELLED);
         }
         this.status = OrderStatus.CANCELLED;
+        this.cancelReason = cancelReason;
+    }
+
+    public void cancel() {
+        cancel(null);
     }
 
     public void markAsCancelling() {

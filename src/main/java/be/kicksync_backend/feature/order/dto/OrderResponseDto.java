@@ -37,6 +37,9 @@ public class OrderResponseDto {
     @Schema(description = "운송장 번호", example = "1234567890")
     private final String trackingNumber;
 
+    @Schema(description = "주문 취소 사유", example = "사용자 요청에 의한 취소")
+    private final String cancelReason;
+
     public OrderResponseDto(Order order) {
         this.orderId = order.getId();
         this.finalPrice = order.getFinalPrice();
@@ -47,6 +50,7 @@ public class OrderResponseDto {
                 .collect(Collectors.toList());
         this.merchantUid = order.getMerchantUid();
         this.trackingNumber = order.getTrackingNumber();
+        this.cancelReason = order.getCancelReason();
     }
 
     public static OrderResponseDto from(Order order) {
