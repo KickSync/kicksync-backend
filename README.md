@@ -78,7 +78,7 @@ src/main/java/be/kicksync_backend
 
 ## 2. 아키텍처 및 핵심 프로세스
 
-### 2-1. 전체 시스템 아키텍처 (System Architecture)
+### 2-1. 전체 시스템 아키텍처
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'fontSize': '13px', 'fontFamily': 'Pretendard, sans-serif'}}}%%
@@ -142,7 +142,7 @@ graph TD
 
 <br>
 
-### 2-2. 대용량 정산 병렬 파티셔닝 프로세스 (Batch Process Architecture)
+### 2-2. 대용량 정산 병렬 파티셔닝 프로세스
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'fontSize': '13px', 'fontFamily': 'Pretendard, sans-serif'}}}%%
@@ -624,8 +624,6 @@ erDiagram
         timestamp created_at "발생 일시"
     }
 ```
-
-* **[ ERD Cloud 인터랙티브 다이어그램 바로가기 ](https://www.erdcloud.com/d/B5xBxsPqkP4uwSPt4)**
 
 <br><br>
 
