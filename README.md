@@ -78,7 +78,7 @@ src/main/java/be/kicksync_backend
 
 ## 2. 시스템 전체 아키텍처
 
-<img width="1252" height="1832" alt="image" src="https://github.com/user-attachments/assets/9bcb75b2-59d6-441d-93be-3c14a95fb5cb" />
+<img width="1252" height="1832" alt="image" src="https://github.com/user-attachments/assets/409b8c01-13c3-4d9d-8b95-32187e3bacd7" />
 
 <br><br>
 
