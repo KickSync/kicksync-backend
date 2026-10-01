@@ -3,11 +3,11 @@
 > **핵심 가치**
 > 
 > - 가혹 인프라 제약 WAS 0.8 vCPU DB 1.0 vCPU RAM 1.5GB 환경 모사 ➔ 소프트웨어 아키텍처 튜닝 기반 시스템 물리적 임계점 및 부하 방어 성능 계측
-> - 피크 1,000 TPS 선착순 결제 부하 ➔ Read/Write 서킷 격리 및 정렬 락으로 100만 건 정산 배치 14분 16초에서 1분 9초 단축 및 가용성 100.00% 방어
+> - 피크 1,000 TPS 선착순 결제 부하 ➔ Read/Write 서킷 격리 및 정렬 락으로 100만 건 정산 배치 14분 16초에서 1분 9초 단축 및 가용성 100% 방어
 
 > **핵심 성과 요약**
 > 
-> - 선착순 주문 및 외부 결제 검증 ➔ SpEL ID 정렬 락과 Resilience4j Read/Write 서킷브레이커 격리로 외부 PG 장애 시 평균 지연 6.96초에서 83ms 중앙값 1.09ms 단축 및 18.5만 건 수용 627.39 TPS 통제로 시스템 가용성 100.00% 방어
+> - 선착순 주문 및 외부 결제 검증 ➔ SpEL ID 정렬 락과 Resilience4j Read/Write 서킷브레이커 격리로 외부 PG 장애 시 평균 지연 6.96초에서 83ms 중앙값 1.09ms 단축 및 18.5만 건 수용 627.39 TPS 통제로 시스템 가용성 100% 방어
 > - 대용량 배치 정산 최적화 ➔ PartnerIdPartitioner 10개 범위 파티셔닝과 커서 스트리밍 및 JVM 인메모리 Micro-batch 사전 집계와 벌크 연산 결합으로 100만 건 정산 시간 14분 16초에서 1분 9초 단축 물리 Disk Write 1.8GB에서 26.9MB 98.5% 절감 및 DB CPU 87.43%에서 16.35% 안정화
 > - 신규 발매 상품 조회 최적화 ➔ EXPLAIN ANALYZE 커버링 인덱스 Sequential I/O와 Redis Look-aside 캐싱 및 Lock-free INCR Rate Limiter 2중 통제망으로 DB CPU 점유율 44.95%에서 1.48% 통제 96.7% 부하 평탄화 및 SQL Time 0ms 기록 인프라 가용성 86.33% 확보
 > - 사내 DB 보안 AIOps 파이프라인 ➔ Air-gapped 로컬 런타임 Ollama 및 MySQL MCP Server Stdio JSON-RPC와 Ralph Loop 자율 디버깅 및 Human Gate 승인망 결합으로 LLM 스키마 환각률 0% 통제 및 개발 생산성 30% 향상
@@ -109,11 +109,11 @@ src/main/java/be/kicksync_backend
 - **문제 상황 AS-IS**
     - SpEL 다중 락 키 정렬 누락 에 따른 다중 스레드 교착 상태 Deadlock 리스크 ➔ 톰캣 스레드 200개 정체 현상 확인
     - 트랜잭션 커밋 전 락 조기 해제 에 따른 갱신 손실 초과 판매 리스크 ➔ 데이터 정합성 훼손 현상 식별
-    - 외부 결제 API DB 트랜잭션 강결합 에 따른 커넥션 풀 전면 고갈 리스크 ➔ 인증 필터 조회 타임아웃 연쇄 장애 및 가용성 0.00% 하락
+    - 외부 결제 API DB 트랜잭션 강결합 에 따른 커넥션 풀 전면 고갈 리스크 ➔ 인증 필터 조회 타임아웃 연쇄 장애 및 가용성 0% 하락
     
   <br>
     <img width="1371" height="1191" alt="image" src="https://github.com/user-attachments/assets/113a20d5-bd93-46f8-bff4-6e64e49f8920" />
-    <img width="1682" height="1541" alt="image" src="https://github.com/user-attachments/assets/af73b0f2-4837-4395-a26c-869e9c526962" />
+    <img width="1682" height="1541" alt="image" src="https://github.com/user-attachments/assets/cefacd17-232b-415e-acf1-9e02bcc2bd04" />
 
 - **해결 전략 및 아키텍처**
     - SpEL ID 정렬 락 ➔ 상품 ID 오름차순 정렬 락 획득 강제로 교착 상태 발생 가능성 배제 및 Redis CPU 4.16%에서 2.15% 추가 절감
@@ -124,7 +124,7 @@ src/main/java/be/kicksync_backend
     - 평균 응답 지연 ➔ 6,960ms에서 83.03ms 중앙값 1.09ms P95 513ms 98.8% 단축
     - 총 처리량 ➔ 19,307건에서 185,692건 평균 627.39 TPS 9.6배 향상
     - 자원 부하 점유율 ➔ WAS CPU 48.13% 및 DB CPU 0.56% 통제로 84.1% 부하 평탄화
-    - 데이터 정합성 및 가용성 ➔ 초과 판매 0건 오차율 0.00% 및 Error Rate 0.00% 기반 시스템 가용성 100.00% 확보
+    - 데이터 정합성 및 가용성 ➔ 초과 판매 0건 오차율 0% 및 Error Rate 0% 기반 시스템 가용성 100% 확보
 
 ---
 
@@ -152,7 +152,7 @@ src/main/java/be/kicksync_backend
     - WAS CPU 가동률 ➔ 평균 16%에서 평균 80.02% 연산 속도 치환 확보
     - 물리 Disk Write I/O ➔ 1.8GB에서 26.9MB 98.5% 삭감
     - SQL Time ➔ 774,656ms 100만 회에서 104ms 33회 99.9% 삭감
-    - 정합성 및 가동률 ➔ 정산 금액 150억 원 정합성 100% 일치 및 배치 가동률 100.00% 통제
+    - 정합성 및 가동률 ➔ 정산 금액 150억 원 정합성 100% 일치 및 배치 가동률 100% 통제
 
 ---
 
@@ -166,7 +166,7 @@ src/main/java/be/kicksync_backend
     - 지연 요청 객체 누적 에 따른 ZGC STW 스파이크 리스크 ➔ 힙 메모리 1,000MB 도달 및 가용성 82.88% 붕괴 현상 식별
     
     <br>
-      <img width="1358" height="1407" alt="image" src="https://github.com/user-attachments/assets/d1e06708-49c6-4377-b4b8-574a50ce131a" />
+      <img width="1358" height="1407" alt="image" src="https://github.com/user-attachments/assets/e9c8ebc3-30fd-47b5-8de8-05266abcb00a" />
 
 
 - **해결 전략 및 아키텍처**
