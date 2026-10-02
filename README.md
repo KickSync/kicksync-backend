@@ -6,8 +6,8 @@
 
 > **핵심 성과 요약**
 > * 선착순 주문 및 외부 결제 검증 ➔ SpEL ID 정렬 락과 Resilience4j Read/Write 서킷브레이커 격리로 외부 PG 장애 시 평균 지연 6.96초에서 83ms 중앙값 1.09ms 단축 및 18.5만 건 수용 627.39 TPS 통제로 시스템 가용성 100% 방어
-> * 대용량 배치 정산 최적화 ➔ PartnerIdPartitioner 10개 범위 파티셔닝과 순방향 스캔 및 JVM 인메모리 Micro-batch 사전 집계와 벌크 연산 결합으로 100만 건 정산 시간 14분 16초에서 1분 9초 단축 및 물리 Disk Write 1.8GB에서 26.9MB 98.5% 절감 및 DB CPU 87.43%에서 16.35% 통제
-> * 신규 발매 상품 조회 최적화 ➔ EXPLAIN ANALYZE 커버링 인덱스 순차 스캔과 Redis Look-aside 캐싱 및 Lock-free INCR Rate Limiter 2중 통제망으로 DB CPU 점유율 44.95%에서 1.48% 통제로 96.7% 부하 평탄화 및 SQL Time 0ms 기록 및 인프라 가용성 86.33% 확보
+> * 대용량 배치 정산 최적화 ➔ PartnerIdPartitioner 10개 범위 파티셔닝과 순방향 스캔 및 JVM 인메모리 Micro-batch 사전 집계와 벌크 연산 결합으로 100만 건 정산 시간 14분 16초에서 1분 9초 단축과 물리 Disk Write 1.8GB에서 26.9MB 98.5% 절감 및 DB CPU 87.43%에서 16.35% 통제
+> * 신규 발매 상품 조회 최적화 ➔ EXPLAIN ANALYZE 커버링 인덱스 순차 스캔과 Redis Look-aside 캐싱 및 Lock-free INCR Rate Limiter 2중 통제망으로 DB CPU 점유율 44.95%에서 1.48% 통제로 96.7% 부하 평탄화와 SQL Time 0ms 기록 및 인프라 가용성 86.33% 확보
 > * 사내 DB 보안 AIOps 파이프라인 ➔ Air-gapped 로컬 런타임 Ollama 및 MySQL MCP Server Stdio JSON-RPC와 Ralph Loop 자율 디버깅 및 Human Gate 승인망 결합으로 LLM 스키마 환각률 0% 통제 및 개발 생산성 30% 확보
 
 <br>
