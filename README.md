@@ -100,7 +100,7 @@ src/main/java/be/kicksync_backend
 
 > 하드웨어 증설 없는 소프트웨어 아키텍처 튜닝 기반 물리적 병목 최적화 방어 프로세스
 
----
+<br>
 
 ### [ Deep-Dive 1 ] 선착순 주문 및 외부 결제 동시성 최적화
 
@@ -111,9 +111,10 @@ src/main/java/be/kicksync_backend
   * 트랜잭션 커밋 전 락 조기 해제에 따른 갱신 손실 리스크 ➔ 데이터 정합성 훼손 현상 식별
   * 외부 결제 API DB 트랜잭션 강결합에 따른 커넥션 풀 전면 고갈 리스크 ➔ 인증 필터 조회 타임아웃 연쇄 장애 및 가용성 0% 하락
 
-<br>
-    <img width="1371" height="1191" alt="image" src="https://github.com/user-attachments/assets/113a20d5-bd93-46f8-bff4-6e64e49f8920" />
-    <img width="1682" height="1541" alt="image" src="https://github.com/user-attachments/assets/cefacd17-232b-415e-acf1-9e02bcc2bd04" />
+  <br>
+      <img width="1371" height="1191" alt="image" src="https://github.com/user-attachments/assets/113a20d5-bd93-46f8-bff4-6e64e49f8920" />
+      <img width="1682" height="1541" alt="image" src="https://github.com/user-attachments/assets/cefacd17-232b-415e-acf1-9e02bcc2bd04" />
+  <br>
 
 * **해결 전략 및 아키텍처**
   * SpEL ID 정렬 락 ➔ 상품 ID 오름차순 정렬 락 획득 강제로 교착 상태 발생 가능성 배제 및 Redis CPU 4.16%에서 2.15% 추가 절감
@@ -127,6 +128,8 @@ src/main/java/be/kicksync_backend
   * 자원 부하 점유율 ➔ WAS CPU 48.13% 및 DB CPU 0.56% 통제로 84.1% 부하 평탄화
   * 데이터 정합성 및 가용성 ➔ 초과 판매 0건 오차율 0% 및 Error Rate 0% 기반 시스템 가용성 100% 확보
 
+<br>
+
 ---
 
 ### [ Deep-Dive 2 ] 입점사별 100만 건 대용량 정산 최적화
@@ -138,8 +141,9 @@ src/main/java/be/kicksync_backend
   * 단건 동기 실행 반복에 따른 물리 디스크 fsync 시스템 콜 과부하 리스크 ➔ 1.8GB Disk Write 과부하 리스크 식별
   * 복합 유니크 제약조건 멀티스레드 동시 쓰기에 따른 공유 갭 락 충돌 리스크 ➔ 커넥션 누수 경보 및 DB CPU 87.43% 포화 현상 식별
 
-<br>
-    <img width="1360" height="1672" alt="image" src="https://github.com/user-attachments/assets/9a7e76d0-a643-45f2-a8d3-ab650fae93bf" />
+  <br>
+      <img width="1360" height="1672" alt="image" src="https://github.com/user-attachments/assets/9a7e76d0-a643-45f2-a8d3-ab650fae93bf" />
+  <br>
 
 * **해결 전략 및 아키텍처**
   * 범위 기반 PartnerIdPartitioner 파티셔닝 ➔ 파티션 물리 격리 10개 병렬 비동기 스레드 분배로 갭 락 경합 및 데드락 가능성 배제
@@ -156,6 +160,8 @@ src/main/java/be/kicksync_backend
   * SQL Time ➔ 774,656ms 100만 회에서 104ms 33회 99.9% 삭감
   * 정합성 및 가동률 ➔ 정산 금액 150억 원 정합성 100% 일치 및 배치 가동률 100% 통제
 
+<br>
+
 ---
 
 ### [ Deep-Dive 3 ] 신규 발매 상품 조회 최적화
@@ -167,8 +173,9 @@ src/main/java/be/kicksync_backend
   * 커넥션 풀 반납 실패에 따른 톰캣 스레드 134개 대기 정체 리스크 ➔ 응답 지연 최장 9초 연장 리스크 식별
   * 지연 요청 객체 누적에 따른 ZGC STW 스파이크 리스크 ➔ 힙 메모리 1,000MB 도달 및 가용성 82.88% 붕괴 현상 식별
 
-<br>
-      <img width="1358" height="1407" alt="image" src="https://github.com/user-attachments/assets/e9c8ebc3-30fd-47b5-8de8-05266abcb00a" />
+  <br>
+        <img width="1358" height="1407" alt="image" src="https://github.com/user-attachments/assets/e9c8ebc3-30fd-47b5-8de8-05266abcb00a" />
+  <br>
 
 * **해결 전략 및 아키텍처**
   * EXPLAIN ANALYZE 기반 커버링 인덱싱 ➔ Select절 컬럼 복합 인덱스 100% 포함 및 순차 스캔 구조로 쿼리 비용 감축
