@@ -77,23 +77,21 @@ src/main/java/be/kicksync_backend
 
 ## 2. 시스템 전체 아키텍처
 
-<img width="1277" height="1904" alt="image" src="https://github.com/user-attachments/assets/69463fdb-89bc-45b9-a74f-ea6522ede7bf" />
+<img width="1277" height="1904" alt="image" src="https://github.com/user-attachments/assets/a9f90172-88df-4866-b9a9-4276b33c904b" />
 
 <br><br>
-
-## 3. 기술 스택
 
 ## 3. 기술 스택
 
 | Category | Technology | Reason for Selection |
 | --- | --- | --- |
 | **Language** | <img src="https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white"> | Virtual Threads 및 ZGC 환경 고부하 I/O 블로킹 최소화 및 힙 메모리 통제 |
-| **Framework** | <img src="https://img.shields.io/badge/Spring_Boot_3.5.5-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/Spring_Batch_5-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> | 파티셔닝 기반 대용량 병렬 데이터 분산 및 메타데이터 이력 관리 |
-| **Database** | <img src="https://img.shields.io/badge/MySQL_8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white"> <img src="https://img.shields.io/badge/Redis_7-DC382D?style=for-the-badge&logo=redis&logoColor=white"> | InnoDB 무결성 보장과 분산 락 및 Look-aside 인메모리 고속 캐싱 확보 |
-| **Resilience & AI** | <img src="https://img.shields.io/badge/Resilience4j-000000?style=for-the-badge&logo=resilience4j&logoColor=white"> <img src="https://img.shields.io/badge/Ollama_Air_gapped-000000?style=for-the-badge&logo=ollama&logoColor=white"> <img src="https://img.shields.io/badge/Model_Context_Protocol-4B32C3?style=for-the-badge&logo=anthropic&logoColor=white"> | Read/Write 아웃바운드 서킷브레이커 스코프 격리 및 폐쇄망 MCP 스키마 주입 통제 |
-| **ORM & Driver** | <img src="https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/JdbcTemplate_Bulk-59666C?style=for-the-badge&logo=hibernate&logoColor=white"> | 도메인 모델링 생산성 확보 및 다중 쿼리 병합 벌크 적재 최적화 |
-| **Infra & CI/CD** | <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/Oracle_Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white"> <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white"> | 단일 노드 격리 배포 자원 제약 모사 기반 아키텍처 임계점 계측 및 무중단 배포 확보 |
-| **Test & Monitor** | <img src="https://img.shields.io/badge/k6-7D64FF?style=for-the-badge&logo=k6&logoColor=white"> <img src="https://img.shields.io/badge/Scouter_APM-00C7B7?style=for-the-badge&logo=scouter&logoColor=white"> <img src="https://img.shields.io/badge/jcmd_Telemetry-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white"> | 피크 1,000 TPS 부하 인가 및 APM 스레드 메트릭 삼각 계측 통제 |
+| **Framework** | <img src="https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white"> <img src="https://img.shields.io/badge/Spring_Batch-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> | 파티셔닝 기반 대용량 병렬 데이터 분산 및 메타데이터 이력 관리 |
+| **Database** | <img src="https://img.shields.io/badge/MySQL_8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white"> <img src="https://img.shields.io/badge/Redis_7.0-DC382D?style=for-the-badge&logo=redis&logoColor=white"> | InnoDB 무결성 보장과 분산 락 및 Look-aside 인메모리 고속 캐싱 확보 |
+| **Resilience & AI** | <img src="https://img.shields.io/badge/Resilience4j-FF5722?style=for-the-badge&logo=springboot&logoColor=white"> <img src="https://img.shields.io/badge/Ollama-FFFFFF?style=for-the-badge&logo=ollama&logoColor=black"> <img src="https://img.shields.io/badge/MCP-1A1A1A?style=for-the-badge&logo=json&logoColor=white"> | Read/Write 아웃바운드 서킷브레이커 스코프 격리 및 폐쇄망 MCP 스키마 주입 통제 |
+| **ORM & Driver** | <img src="https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/JDBC-007ACC?style=for-the-badge&logo=java&logoColor=white"> | 도메인 모델링 생산성 확보 및 다중 쿼리 병합 벌크 적재 최적화 |
+| **Infra & CI/CD** | <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/OCI-F80000?style=for-the-badge&logo=oracle&logoColor=white"> <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white"> | 단일 노드 격리 배포 자원 제약 모사 기반 아키텍처 임계점 계측 및 무중단 배포 확보 |
+| **Test & Monitor** | <img src="https://img.shields.io/badge/k6-7D64FF?style=for-the-badge&logo=k6&logoColor=white"> <img src="https://img.shields.io/badge/Scouter_APM-FF9900?style=for-the-badge&logo=java&logoColor=white"> | 피크 1,000 TPS 부하 인가 및 APM 스레드 메트릭 삼각 계측 통제 |
 
 <br><br>
 
@@ -143,7 +141,7 @@ src/main/java/be/kicksync_backend
 
 ### [ Deep-Dive 3 ] 신규 발매 상품 조회 RDBMS 병목 방어
 
-<img width="1358" height="1497" alt="image" src="https://github.com/user-attachments/assets/78bb420b-ac6e-4095-8e39-5b97790fcb94" />
+<img width="1358" height="1497" alt="image" src="https://github.com/user-attachments/assets/28f26e22-8089-4f8f-8cfb-08a0c717fd2c" />
 
 * **문제 원인**
     * 500만 건 규모 순차 스캔 및 Random I/O 수직 탐색 병목 ➔ 풀 고갈 및 평균 32ms SQL 처리 지연 식별
@@ -162,7 +160,7 @@ src/main/java/be/kicksync_backend
 
 ### [ Deep-Dive 4 ] 사내 DB 보안 AIOps 파이프라인 구축
 
-<img width="1544" height="1202" alt="image" src="https://github.com/user-attachments/assets/d65c5791-d0c7-4c82-99f0-62e219fa383e" />
+ <img width="1544" height="1202" alt="image" src="https://github.com/user-attachments/assets/6077ca55-5eb2-4467-86e6-eb0f6fe75cd2" />
 
 * **문제 원인**
     * 복잡한 엔티티 의존성 해소를 위한 퍼블릭 LLM 도입 한계 ➔ 대화 토큰 누적에 따른 전역 상태 ERD 유실 및 컨텍스트 단절 현상 식별
