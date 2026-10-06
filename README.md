@@ -7,7 +7,7 @@
 > **핵심 성과 요약**
 > * 선착순 주문 및 외부 결제 검증 ➔ SpEL ID 정렬 락과 Resilience4j Read/Write 서킷브레이커 격리로 외부 PG 장애 시 평균 지연 6.96초에서 83ms(중앙값 1.09ms)로 단축 및 18.5만 건(평균 627.39 TPS) 수용으로 시스템 가용성 100% 확보
 > * 대용량 배치 정산 최적화 ➔ PartnerIdPartitioner 10개 파티셔닝과 순방향 스캔 및 JVM 인메모리 Micro-batch 사전 집계 벌크 연산 결합으로 100만 건 정산 시간 14분 16초에서 1분 9초로 단축과 물리 Disk Write 1.8GB에서 26.9MB로 절감 및 DB CPU 87.43%에서 16.35%로 통제
-> * 신규 발매 상품 조회 최적화 ➔ EXPLAIN ANALYZE 커버링 인덱스 순차 스캔과 Redis Look-aside 캐싱 및 Lock-free INCR Rate Limiter 2중 통제망 구축으로 DB CPU 44.95%에서 1.48%로 통제 기반 96.7% 부하 평탄화와 SQL Time 0ms 기록 및 인프라 가용성 86.33% 확보
+> * 신규 발매 상품 조회 최적화 ➔ EXPLAIN ANALYZE 커버링 인덱스 순차 스캔과 Redis Look-aside 캐싱 및 Lock-free INCR Rate Limiter 2중 통제망 구축으로 DB CPU 44.95%에서 1.48%로 통제 및 P95 지연 94.4% 단축 기반 처리량 16.6% 확장
 > * 사내 DB 보안 AIOps 파이프라인 ➔ Air-gapped 로컬 런타임 Ollama 및 MySQL MCP Server JSON-RPC와 Ralph Loop 자율 디버깅 결합으로 스키마 환각률 0% 통제 및 개발 생산성 30% 확보
 
 <br>
@@ -103,7 +103,7 @@ src/main/java/be/kicksync_backend
 
 ### [ Deep-Dive 1 ] 다중 락 교착 및 외부 결제 연쇄 장애 방어
 
-<img width="2034" height="1728" alt="image" src="https://github.com/user-attachments/assets/6e69d970-a997-4359-9b71-a939c9da4321" />
+<img width="2034" height="1728" alt="image" src="https://github.com/user-attachments/assets/d4e3ecf3-9f12-484c-b7a1-044dd5712223" />
 
 * **문제 원인**
     * SpEL 다중 락 키 정렬 누락에 따른 스레드 간 교착 상태 ➔ Tomcat 스레드 200개 대기 풀 정체 및 평균 응답 시간 6.96초 지연 병목 식별
@@ -122,7 +122,7 @@ src/main/java/be/kicksync_backend
 
 ### [ Deep-Dive 2 ] 100만 건 정산 페이징 및 I/O 병목 최적화
 
-<img width="1360" height="1672" alt="image" src="https://github.com/user-attachments/assets/5ca3c016-fd85-4406-a703-8ad59f5e54d6" />
+<img width="1360" height="1672" alt="image" src="https://github.com/user-attachments/assets/2e802141-26eb-4a2a-bec0-ec6732eb8902" />
 
 * **문제 원인**
     * 페이징 후반부 누적 OFFSET 유발 순차 스캔 가중 ➔ 단일 쿼리 실행 774초 소요 단일 스레드 정체 현상 식별
@@ -141,10 +141,10 @@ src/main/java/be/kicksync_backend
 
 ### [ Deep-Dive 3 ] 신규 발매 상품 조회 RDBMS 병목 방어
 
-<img width="1358" height="1497" alt="image" src="https://github.com/user-attachments/assets/28f26e22-8089-4f8f-8cfb-08a0c717fd2c" />
+<img width="1358" height="1497" alt="image" src="https://github.com/user-attachments/assets/a0c3dd7f-fdae-4b27-8ed2-bb9dd3ad3221" />
 
 * **문제 원인**
-    * 500만 건 규모 순차 스캔 및 Random I/O 수직 탐색 병목 ➔ 풀 고갈 및 평균 32ms SQL 처리 지연 식별
+    * 500만 건 규모 순차 스캔 및 Random I/O 수직 탐색 병목 ➔ 10개 제한 HikariCP DB 커넥션 풀 고갈 및 평균 32ms SQL 처리 지연 식별
     * DB 커넥션 경합에 따른 스레드 대기 상태 정체 ➔ 응답 시간 최장 9초 지연 및 시스템 정체 리스크 식별
     * 요청 정체에 따른 힙 메모리 1,000MB 포화 ➔ 최대 12초 STW 스파이크 및 GC 쓰레싱 기반 가용성 저하 리스크 식별
 * **해결 과정**
@@ -153,14 +153,14 @@ src/main/java/be/kicksync_backend
     * 악성 트래픽 유입에 따른 DB 커넥션 고갈 리스크 ➔ 서비스 진입점 Redis INCR 원자 연산 기반 Lock-free Rate Limiter 배치로 악성 트래픽 진입 0ms 즉시 차단
 * **정량적 실측 성과**
     * 커버링 인덱스 및 Look-aside 캐시 결합으로 DB CPU 점유율 44.95%에서 평균 1.48%로 통제 및 SQL Time 0ms 확보
-    * 자원 포화 대기 시간 제외 트랜잭션 처리 속도 0.5초 이하 대역 통제 및 동일 환경 대비 총 처리량 50,484건에서 58,902건으로 확보
-    * 134개 커넥션 획득 대기 스레드 및 동기화 락 경합 차단으로 인프라 가용성 86.33% 확보
+    * 자원 포화 대기 시간 제외 실질 트랜잭션 응답 속도 최장 9.0초에서 0.5초 이하 대역 안착(94.4% 단축) 및 총 처리량 50,484건에서 58,902건으로 16.6% 확장 확보
+    * 134개 커넥션 획득 대기 스레드 및 69개 동기화 락 경합 상태 해소 기반 초과 부하 13.67% HTTP 429 즉시 차단으로 유효 트래픽 방어율 86.33% 확보
 
 <br>
 
 ### [ Deep-Dive 4 ] 사내 DB 보안 AIOps 파이프라인 구축
 
- <img width="1544" height="1202" alt="image" src="https://github.com/user-attachments/assets/6077ca55-5eb2-4467-86e6-eb0f6fe75cd2" />
+<img width="1544" height="1202" alt="image" src="https://github.com/user-attachments/assets/fb24571a-12fc-4248-b20c-11ee564eeb5a" />
 
 * **문제 원인**
     * 복잡한 엔티티 의존성 해소를 위한 퍼블릭 LLM 도입 한계 ➔ 대화 토큰 누적에 따른 전역 상태 ERD 유실 및 컨텍스트 단절 현상 식별
