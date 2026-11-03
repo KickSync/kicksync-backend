@@ -142,7 +142,7 @@ src/main/java/be/kicksync_backend
 
 ### [ Deep-Dive 3 ] 신규 발매 상품 조회 RDBMS 병목 방어
 
-<img width="1358" height="1497" alt="image" src="https://github.com/user-attachments/assets/40f52bd3-6a9d-497f-bc11-764f9b6df335" />
+<img width="1358" height="1497" alt="image" src="https://github.com/user-attachments/assets/00250379-aeb9-4291-8359-6f3e0e9d2216" />
 
 * **문제 원인**
 		* 500만 건 규모 순차 스캔 및 Random I/O 수직 탐색 병목 ➔ 10개 제한 HikariCP DB 커넥션 풀 고갈 및 평균 32ms SQL 처리 지연 식별
